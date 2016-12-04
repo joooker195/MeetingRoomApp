@@ -12,12 +12,4 @@
     tools:context="com.meetingroom.MeetingListActivity"
     tools:showIn="@layout/app_bar_meeting_list">
 
-    <Button
-        android:id="@+id/a"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="109dp"
-        android:text="New Button" />
 </RelativeLayout>
