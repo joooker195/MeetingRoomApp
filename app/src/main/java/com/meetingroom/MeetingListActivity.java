@@ -133,7 +133,7 @@ public class MeetingListActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.meeting_list, menu);
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -142,6 +142,10 @@ public class MeetingListActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if(id == R.id.action_update)
+        {
             return true;
         }
 
