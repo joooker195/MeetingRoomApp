@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +21,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MeetingListActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -34,6 +37,8 @@ public class MeetingListActivity extends AppCompatActivity
     private int mYear;
     private int mMonth;
     private int mDay;
+
+    private Map<String,String> key = new HashMap<>();
 
     private TextView dateText;
 
@@ -54,8 +59,8 @@ public class MeetingListActivity extends AppCompatActivity
         mDay = date.get(Calendar.DAY_OF_MONTH);
         dateText= (TextView) findViewById(R.id.date);
         dateText.setText(new StringBuilder()
-                .append(mMonth + 1).append(".")
                 .append(mDay).append(".")
+                .append(mMonth+1).append(".")
                 .append(mYear).append(" "));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,29 +74,38 @@ public class MeetingListActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-
         FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder> firebaseRecyclerAdapter = new
                 FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder>(
                         MeetingRow.class,
                         R.layout.meeting_row,
                         MeetingViewHolder.class,
                         mDatabase) {
-            @Override
-            protected void populateViewHolder(MeetingViewHolder viewHolder, MeetingRow model, int position) {
+                    @Override
+                    protected void populateViewHolder(MeetingViewHolder viewHolder, MeetingRow model, int position) {
 
-                viewHolder.setTitle(model.getTitle());
-                viewHolder.setDesc(model.getDesc());
-            }
-        };
+                        viewHolder.setTitle(model.getTitle());
+                        viewHolder.setDesc(model.getDesc());
+                        key.put(model.getDesc(), String.valueOf(position));
+                        Log.v("E_VALUE", "viewId = "+ position);
+
+                    }
+                };
         mMeetingList.setAdapter(firebaseRecyclerAdapter);
+
     }
+
+
 
     public void onClickNext(View view)
     {
+        TextView a = (TextView) findViewById(R.id.meeting_desc);
+        String b = a.getText().toString();
+        MeetingDescActivity.KEY = key.get(b);
         Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
         startActivity(intent);
 
     }
+
 
 
     private static class MeetingViewHolder extends RecyclerView.ViewHolder
@@ -132,7 +146,7 @@ public class MeetingListActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.meeting_list, menu);
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+    //    getMenuInflater().inflate(R.menu.main_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
