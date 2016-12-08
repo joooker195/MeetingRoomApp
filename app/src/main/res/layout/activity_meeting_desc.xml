@@ -11,29 +11,45 @@
     android:layout_centerVertical="true"
     >
 
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView"
+        android:padding="1000dp"
+        android:fillViewport="false"
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentEnd="false">
+
+    </ScrollView>
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:weightSum="1"
         android:orientation="vertical"
-        android:id="@+id/linearLayout">
+        android:id="@+id/linearLayout"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true">
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/desc_title"
             android:hint="Заголовок"
-            android:textSize="30dp" />
+            android:textSize="25dp"
+            android:layout_gravity="center_horizontal" />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="38dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:id="@+id/desc_description"
             android:hint="Описание"
             android:textSize="20dp"
-            android:textIsSelectable="true" />
+            android:textIsSelectable="true"
+            android:layout_gravity="center_horizontal" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -41,31 +57,14 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="Участники:"
             android:paddingBottom="10dp"
-            android:textSize="25dp"
+            android:textSize="20dp"
             android:textColor="#000" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout"
-        android:layout_alignParentStart="true"
-        android:id="@+id/linearLayout2">
-
         <ExpandableListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/desc_party" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_below="@+id/linearLayout2"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="20dp">
+            android:layout_width="215dp"
+            android:layout_height="127dp"
+            android:id="@+id/desc_party"
+            android:layout_weight="1.01" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -73,7 +72,7 @@
             android:text="Начало: "
             android:paddingBottom="10dp"
             android:id="@+id/desc_begin"
-            android:textSize="25dp" />
+            android:textSize="18dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -81,18 +80,22 @@
             android:text="Конец: "
             android:paddingBottom="10dp"
             android:id="@+id/desc_end"
-            android:textSize="25dp" />
+            android:textSize="18dp" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Приоритет: "
             android:paddingBottom="20dp"
             android:id="@+id/desc_priority"
-            android:textSize="25dp" />
+            android:textSize="18dp" />
+
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Подтвердить \nучастие" />
+
     </LinearLayout>
+
 
 </RelativeLayout>

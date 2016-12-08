@@ -99,6 +99,7 @@ public class MeetingDescActivity extends AppCompatActivity {
                     childDataList.add(childDataItemList);
                 }
 
+
                 String groupFrom[] = new String[] {"number"};
                 int groupTo[] = new int[] {android.R.id.text1};
 
