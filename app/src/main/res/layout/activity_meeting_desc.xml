@@ -61,7 +61,7 @@
             android:textColor="#000" />
 
         <ExpandableListView
-            android:layout_width="215dp"
+            android:layout_width="match_parent"
             android:layout_height="127dp"
             android:id="@+id/desc_party"
             android:layout_weight="1.01" />

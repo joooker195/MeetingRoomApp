@@ -82,7 +82,7 @@ public class MeetingDescActivity extends AppCompatActivity {
 
                 ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
                 ArrayList<ArrayList<Map<String,String>>> childDataList = new ArrayList<>();
-                ArrayList<Map<String,String>> childDataItemList = new ArrayList<>();
+                ArrayList<Map<String,String>> childDataItemList;
 
                 for(int i=0; i< list.size(); i++)
                 {
@@ -93,6 +93,7 @@ public class MeetingDescActivity extends AppCompatActivity {
                     groupDataList.add(mapDataList);
 
                     mapChildDataList = new HashMap<>();
+                    childDataItemList = new ArrayList<>();
                     mapChildDataList.put("desc", "Должность: " + childList.get("prof"));
                     childDataItemList.add(mapChildDataList);
 
