@@ -32,14 +32,6 @@
             android:padding="10dp"
             android:textSize="15dp"/>
 
-        <Button
-            android:layout_width="102dp"
-            android:layout_height="33dp"
-            android:onClick="onClickNext"
-            android:text="Подробнее"
-            android:textSize="10dp"
-            android:background="@color/background"
-            android:drawableRight="@drawable/ic_keyboard_arrow_right_black_18dp"/>
 
 
     </LinearLayout>

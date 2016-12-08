@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -81,31 +80,26 @@ public class MeetingListActivity extends AppCompatActivity
                         MeetingViewHolder.class,
                         mDatabase) {
                     @Override
-                    protected void populateViewHolder(MeetingViewHolder viewHolder, MeetingRow model, int position) {
+                    protected void populateViewHolder(final MeetingViewHolder viewHolder, MeetingRow model, int position) {
 
                         viewHolder.setTitle(model.getTitle());
                         viewHolder.setDesc(model.getDesc());
                         key.put(model.getDesc(), String.valueOf(position));
-                        Log.v("E_VALUE", "viewId = "+ position);
+
+                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                MeetingDescActivity.KEY = String.valueOf(viewHolder.getPosition());
+                                Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
+                                startActivity(intent);
+                            }
+                        });
 
                     }
                 };
         mMeetingList.setAdapter(firebaseRecyclerAdapter);
 
     }
-
-
-
-    public void onClickNext(View view)
-    {
-        TextView a = (TextView) findViewById(R.id.meeting_desc);
-        String b = a.getText().toString();
-        MeetingDescActivity.KEY = key.get(b);
-        Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
-        startActivity(intent);
-
-    }
-
 
 
     private static class MeetingViewHolder extends RecyclerView.ViewHolder
