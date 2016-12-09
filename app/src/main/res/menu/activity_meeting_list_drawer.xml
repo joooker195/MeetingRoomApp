@@ -3,10 +3,6 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_group"
-            android:icon="@drawable/ic_group"
-            android:title="Список встреч" />
-        <item
             android:id="@+id/nav_add_group"
             android:icon="@drawable/ic_group_add"
             android:title="Добавить встречу" />

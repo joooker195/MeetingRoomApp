@@ -138,9 +138,7 @@ public class MeetingListActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.meeting_list, menu);
-    //    getMenuInflater().inflate(R.menu.main_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -170,12 +168,10 @@ public class MeetingListActivity extends AppCompatActivity
             case R.id.nav_exit:
                 mAuth = FirebaseAuth.getInstance();
                 mAuth.signOut();
-                Intent intent = new Intent(MeetingListActivity.this, MainActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(MeetingListActivity.this, MainActivity.class));
                 break;
             case R.id.nav_add_group:
-                break;
-            case R.id.nav_group:
+                startActivity(new Intent(MeetingListActivity.this, MeetingAddActivity.class));
                 break;
             case R.id.nav_search:
                 break;
