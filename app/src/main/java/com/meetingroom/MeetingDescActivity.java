@@ -26,7 +26,6 @@ public class MeetingDescActivity extends AppCompatActivity {
 
     public static  String KEY = "";
 
-    private ArrayList<String> mListPartys = new ArrayList<>();
 
     private TextView mTitle;
     private TextView mDesc;
@@ -34,6 +33,7 @@ public class MeetingDescActivity extends AppCompatActivity {
     private TextView mBegin;
     private TextView mEnd;
     private TextView mPriority;
+    private TextView mTextPartys;
 
 
     @Override
@@ -48,6 +48,7 @@ public class MeetingDescActivity extends AppCompatActivity {
         mEnd = (TextView) findViewById(R.id.desc_end);
         mPriority = (TextView) findViewById(R.id.desc_priority);
         mPrtys = (ExpandableListView) findViewById(R.id.desc_party);
+        mTextPartys = (TextView) findViewById(R.id.text_partys);
 
 
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
@@ -56,12 +57,12 @@ public class MeetingDescActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Map<String, Map<String,String>> map = dataSnapshot.getValue(Map.class);
-                mTitle.setText(map.get("n_"+KEY).get("title").toString());
-                mDesc.setText(map.get("n_"+KEY).get("desc").toString());
-                mBegin.setText("Начало: "+map.get("n_"+KEY).get("begin").toString());
-                mEnd.setText("Конец: "+ map.get("n_"+KEY).get("end").toString());
-                mPriority.setText("Приоритет: "+map.get("n_"+KEY).get("priority").toString());
+                Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
+                mTitle.setText(map.get("n_" + KEY).get("title").toString());
+                mDesc.setText(map.get("n_" + KEY).get("desc").toString());
+                mBegin.setText("Начало: " + map.get("n_" + KEY).get("begin").toString());
+                mEnd.setText("Конец: " + map.get("n_" + KEY).get("end").toString());
+                mPriority.setText("Приоритет: " + map.get("n_" + KEY).get("priority").toString());
 
             }
 
@@ -71,57 +72,69 @@ public class MeetingDescActivity extends AppCompatActivity {
             }
         });
 
-        mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_"+KEY+"/partys");
-        mRefListPartys.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Map<String, Map<String,String>> list = dataSnapshot.getValue(Map.class);
+        try {
+            mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY + "/partys");
+            mRefListPartys.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    try {
+                        mTextPartys.setText("Участники:");
+                        Map<String, Map<String, String>> list = dataSnapshot.getValue(Map.class);
 
-                Map<String,String> mapDataList;
-                Map<String,String> mapChildDataList;
+                        Map<String, String> mapDataList;
+                        Map<String, String> mapChildDataList;
 
-                ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
-                ArrayList<ArrayList<Map<String,String>>> childDataList = new ArrayList<>();
-                ArrayList<Map<String,String>> childDataItemList;
+                        ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
+                        ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
+                        ArrayList<Map<String, String>> childDataItemList;
 
-                for(int i=0; i< list.size(); i++)
-                {
-                    Map<String, String> childList = list.get("p_"+i);
-                    mapDataList = new HashMap<>();
-                    mapDataList.put("number", String.valueOf(i+1)+") " + childList.get("name"));
+                        for (int i = 0; i < list.size(); i++) {
+                            Map<String, String> childList = list.get("p_" + i);
+                            mapDataList = new HashMap<>();
+                            mapDataList.put("number", String.valueOf(i + 1) + ") " + childList.get("name"));
 
-                    groupDataList.add(mapDataList);
+                            groupDataList.add(mapDataList);
 
-                    mapChildDataList = new HashMap<>();
-                    childDataItemList = new ArrayList<>();
-                    mapChildDataList.put("desc", "Должность: " + childList.get("prof"));
-                    childDataItemList.add(mapChildDataList);
+                            mapChildDataList = new HashMap<>();
+                            childDataItemList = new ArrayList<>();
+                            mapChildDataList.put("desc", "Должность: " + childList.get("prof"));
+                            childDataItemList.add(mapChildDataList);
 
-                    childDataList.add(childDataItemList);
+                            childDataList.add(childDataItemList);
+                        }
+
+
+                        String groupFrom[] = new String[]{"number"};
+                        int groupTo[] = new int[]{android.R.id.text1};
+
+                        String childFrom[] = new String[]{"desc"};
+                        int childTo[] = new int[]{android.R.id.text1};
+
+                        SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
+                                MeetingDescActivity.this, groupDataList,
+                                android.R.layout.simple_expandable_list_item_1, groupFrom,
+                                groupTo, childDataList, android.R.layout.simple_list_item_1,
+                                childFrom, childTo);
+
+                        mPrtys.setAdapter(adapter);
+                    }
+                    catch (Exception e)
+                    {
+                        mTextPartys.setText("Участники: \nВ списке пока нет участников");
+                    }
+
                 }
 
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
 
-                String groupFrom[] = new String[] {"number"};
-                int groupTo[] = new int[] {android.R.id.text1};
+                }
+            });
+        }
+        catch (Exception e)
+        {
 
-                String childFrom[] = new String[] { "desc" };
-                int childTo[] = new int[] { android.R.id.text1 };
-
-                SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
-                        MeetingDescActivity.this, groupDataList,
-                        android.R.layout.simple_expandable_list_item_1, groupFrom,
-                        groupTo, childDataList, android.R.layout.simple_list_item_1,
-                        childFrom, childTo);
-
-                mPrtys.setAdapter(adapter);
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
+        }
     }
 
 
