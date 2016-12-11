@@ -7,6 +7,17 @@ public class MeetingRow {
 
     private String title;
     private String desc;
+    private String key;
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+
 
     public MeetingRow()
     {

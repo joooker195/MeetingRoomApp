@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -63,25 +64,38 @@ public class MeetingAddActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Firebase mChildRef = mRef.child("n_"+count);
+                try {
+                    Firebase mChildRef = mRef.child("n_" + count);
 
-                Firebase mChildRefTitle = mChildRef.child("title");
-                mChildRefTitle.setValue(mEditTitle.getText().toString());
+                    if (mEditTitle.getText().toString().equals("") || mEditDesc.getText().toString().equals("")
+                            || mEditDateBegin.getText().toString().equals("") || mEditTimeBegin.getText().toString().equals("")
+                            || mEditDateEnd.getText().toString().equals("")  || mEditTimeEnd.getText().toString().equals("")
+                            || mEditPriority.getText().toString().equals(""))
+                    {
+                        throw new Exception();
+                    }
+                    parseDate(mEditDateBegin.getText().toString(), "начала");
+                    Firebase mChildRefTitle = mChildRef.child("title");
+                    mChildRefTitle.setValue(mEditTitle.getText().toString());
 
-                Firebase mChildRefDesc = mChildRef.child("desc");
-                mChildRefDesc.setValue(mEditDesc.getText().toString());
+                    Firebase mChildRefDesc = mChildRef.child("desc");
+                    mChildRefDesc.setValue(mEditDesc.getText().toString());
 
-                Firebase mChildRefBegin = mChildRef.child("begin");
-                mChildRefBegin.setValue(mEditDateBegin.getText().toString()+ " " + mEditTimeBegin.getText());
+                    Firebase mChildRefBegin = mChildRef.child("begin");
+                    mChildRefBegin.setValue(mEditDateBegin.getText().toString() + " " + mEditTimeBegin.getText());
 
-                Firebase mChildRefEnd = mChildRef.child("end");
-                mChildRefEnd.setValue(mEditDateEnd.getText().toString()+ " " + mEditTimeEnd.getText());
+                    Firebase mChildRefEnd = mChildRef.child("end");
+                    mChildRefEnd.setValue(mEditDateEnd.getText().toString() + " " + mEditTimeEnd.getText());
 
-                Firebase mChildRefPrior = mChildRef.child("priority");
-                mChildRefPrior.setValue(mEditPriority.getText().toString());
+                    Firebase mChildRefPrior = mChildRef.child("priority");
+                    mChildRefPrior.setValue(mEditPriority.getText().toString());
 
-
-                startActivity(new Intent(MeetingAddActivity.this, MeetingListActivity.class));
+                    startActivity(new Intent(MeetingAddActivity.this, MeetingListActivity.class));
+                }
+                catch (Exception e)
+                {
+                    Toast.makeText(MeetingAddActivity.this, "Заполнены не все поля", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -103,5 +117,30 @@ public class MeetingAddActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void parseDate(String date, String desc)
+    {
+        try {
+
+            String[] parse = date.split(".");
+
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(MeetingAddActivity.this, "Не верно заполнена дата"+desc, Toast.LENGTH_LONG).show();
+        }
+    }
+    public void parseTime(String time, String desc)
+    {
+        try {
+
+            String[] parse = time.split(":");
+
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(MeetingAddActivity.this, "Не верно заполнено время"+desc, Toast.LENGTH_LONG).show();
+        }
     }
 }

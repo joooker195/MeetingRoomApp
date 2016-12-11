@@ -61,4 +61,13 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="59dp"
         android:text="Продолжить" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:indeterminateDrawable="@drawable/loader"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"/>
 </RelativeLayout>

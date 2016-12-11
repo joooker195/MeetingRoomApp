@@ -24,8 +24,9 @@ public class MeetingDescActivity extends AppCompatActivity {
     private Firebase mRef;
     private Firebase mRefListPartys;
 
-    public static  String KEY = "";
+    public static String KEY = "";
 
+    Map<String, Map<String, String>> delmap = new HashMap<>();
 
     private TextView mTitle;
     private TextView mDesc;
@@ -53,24 +54,37 @@ public class MeetingDescActivity extends AppCompatActivity {
 
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
 
-        mRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            mRef.addValueEventListener(new ValueEventListener() {
 
-                Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                mTitle.setText(map.get("n_" + KEY).get("title").toString());
-                mDesc.setText(map.get("n_" + KEY).get("desc").toString());
-                mBegin.setText("Начало: " + map.get("n_" + KEY).get("begin").toString());
-                mEnd.setText("Конец: " + map.get("n_" + KEY).get("end").toString());
-                mPriority.setText("Приоритет: " + map.get("n_" + KEY).get("priority").toString());
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
 
-            }
+                    try {
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+                        Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
+                        mTitle.setText(map.get("n_" + KEY).get("title").toString());
+                        mDesc.setText(map.get("n_" + KEY).get("desc").toString());
+                        mBegin.setText("Начало: " + map.get("n_" + KEY).get("begin").toString());
+                        mEnd.setText("Конец: " + map.get("n_" + KEY).get("end").toString());
+                        mPriority.setText("Приоритет: " + map.get("n_" + KEY).get("priority").toString());
+                    }
+                    catch (Exception e)
+                    {
 
-            }
-        });
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+
+            });
+
+
+
+
 
         try {
             mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY + "/partys");
@@ -152,7 +166,27 @@ public class MeetingDescActivity extends AppCompatActivity {
             Intent intent = new Intent(MeetingDescActivity.this, MeetingListActivity.class);
             startActivity(intent);
         }
+        if (id == R.id.action_del)
+        {
+            delMeeting();
+            Intent intent = new Intent(MeetingDescActivity.this, MeetingListActivity.class);
+            startActivity(intent);
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void delMeeting()
+    {
+        try {
+
+            mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY);
+            mRefListPartys.removeValue();
+        }
+        catch (Exception e)
+        {
+
+        }
+
     }
 }

@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private Button mOkButton;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private ProgressBar mProgressBar;
 
 
     @Override
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         mEmailText = (EditText) findViewById(R.id.edit_email);
         mOkButton = (Button) findViewById(R.id.ok_button);
         mAuth = FirebaseAuth.getInstance();
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 
 
@@ -44,10 +47,10 @@ public class MainActivity extends AppCompatActivity {
                 if(firebaseAuth.getCurrentUser() != null)
                 {
                     startActivity(new Intent(MainActivity.this, MeetingListActivity.class));
+                    mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 }
             }
         };
-
 
 
         mOkButton.setOnClickListener(new View.OnClickListener() {
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
+
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
     }
@@ -70,11 +74,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startSignIn() {
+        mProgressBar.setVisibility(ProgressBar.VISIBLE);
         String email = mEmailText.getText().toString();
         String password = mPasswordText.getText().toString();
 
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
             Toast.makeText(MainActivity.this, "Fields are empty", Toast.LENGTH_LONG).show();
+            mProgressBar.setVisibility(ProgressBar.INVISIBLE);
         }
         else
         {
@@ -83,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (!task.isSuccessful()) {
                         Toast.makeText(MainActivity.this, "Sing In Problem", Toast.LENGTH_LONG).show();
+                        mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                     }
                 }
             });

@@ -73,15 +73,16 @@ public class MeetingListActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+
         FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder> firebaseRecyclerAdapter = new
                 FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder>(
                         MeetingRow.class,
                         R.layout.meeting_row,
                         MeetingViewHolder.class,
                         mDatabase) {
-                    @Override
-                    protected void populateViewHolder(final MeetingViewHolder viewHolder, MeetingRow model, int position) {
 
+                    @Override
+                    protected void populateViewHolder(final MeetingViewHolder viewHolder, final MeetingRow model, int position) {
                         viewHolder.setTitle(model.getTitle());
                         viewHolder.setDesc(model.getDesc());
                         key.put(model.getDesc(), String.valueOf(position));
@@ -89,15 +90,19 @@ public class MeetingListActivity extends AppCompatActivity
                         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                MeetingDescActivity.KEY = String.valueOf(viewHolder.getPosition());
+                                MeetingDescActivity.KEY = model.getKey();
                                 Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
                                 startActivity(intent);
                             }
                         });
 
+
+
                     }
+
                 };
         mMeetingList.setAdapter(firebaseRecyclerAdapter);
+
 
     }
 
@@ -105,6 +110,7 @@ public class MeetingListActivity extends AppCompatActivity
     private static class MeetingViewHolder extends RecyclerView.ViewHolder
     {
         View mView;
+
 
         public MeetingViewHolder(View itemView) {
             super(itemView);
@@ -121,6 +127,7 @@ public class MeetingListActivity extends AppCompatActivity
         {
             TextView meeting_desc = (TextView) mView.findViewById(R.id.meeting_desc);
             meeting_desc.setText(desc);
+
         }
     }
 
