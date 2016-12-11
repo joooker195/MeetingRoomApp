@@ -10,18 +10,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class MeetingAddActivity extends AppCompatActivity {
 
     private Button mAddMeeting;
     private Firebase mRef;
-    private int count = 0;
+    private String key = "";
 
     private EditText mEditTitle;
     private EditText mEditDesc;
@@ -46,35 +44,33 @@ public class MeetingAddActivity extends AppCompatActivity {
         mEditTimeEnd = (EditText) findViewById(R.id.time_end);
         mEditPriority = (EditText) findViewById(R.id.add_priority);
 
+        key = GenereratorKey.getKey();
+
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
-        mRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final Map<String, String> map = dataSnapshot.getValue(Map.class);
-                count = map.size();
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
 
         mAddMeeting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 try {
-                    Firebase mChildRef = mRef.child("n_" + count);
+                    Firebase mChildRef = mRef.child("n_" + key);
 
-                    if (mEditTitle.getText().toString().equals("") || mEditDesc.getText().toString().equals("")
+                    boolean isEnptyFlag = (mEditTitle.getText().toString().equals("") || mEditDesc.getText().toString().equals("")
                             || mEditDateBegin.getText().toString().equals("") || mEditTimeBegin.getText().toString().equals("")
                             || mEditDateEnd.getText().toString().equals("")  || mEditTimeEnd.getText().toString().equals("")
-                            || mEditPriority.getText().toString().equals(""))
+                            || mEditPriority.getText().toString().equals(""));
+
+                    boolean parseDateFlag = (isValidDate(mEditDateBegin.getText().toString(), "dd.MM.yyyy") &&
+                                                isValidDate(mEditDateEnd.getText().toString(), "dd.MM.yyyy"));
+
+                    boolean parseTimeFlag = (isValidTime(mEditTimeBegin.getText().toString(), "HH:mm") &&
+                            isValidTime(mEditTimeEnd.getText().toString(), "HH:mm"));
+
+                    if (isEnptyFlag || !parseDateFlag || !parseTimeFlag)
                     {
                         throw new Exception();
                     }
-                    parseDate(mEditDateBegin.getText().toString(), "начала");
+
                     Firebase mChildRefTitle = mChildRef.child("title");
                     mChildRefTitle.setValue(mEditTitle.getText().toString());
 
@@ -90,11 +86,14 @@ public class MeetingAddActivity extends AppCompatActivity {
                     Firebase mChildRefPrior = mChildRef.child("priority");
                     mChildRefPrior.setValue(mEditPriority.getText().toString());
 
+                    Firebase mChildRefKey = mChildRef.child("key");
+                    mChildRefKey.setValue(key);
+
                     startActivity(new Intent(MeetingAddActivity.this, MeetingListActivity.class));
                 }
                 catch (Exception e)
                 {
-                    Toast.makeText(MeetingAddActivity.this, "Заполнены не все поля", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MeetingAddActivity.this, "Проверьте правильность заполнения полей", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -119,28 +118,38 @@ public class MeetingAddActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void parseDate(String date, String desc)
-    {
+
+    static boolean isValidDate(String value, String datePattern) {
+
+        if (value == null || datePattern == null || datePattern.length() <= 0) {
+            return false;
+        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
+        formatter.setLenient(false);
+
         try {
-
-            String[] parse = date.split(".");
-
+            formatter.parse(value);
+        } catch (ParseException e) {
+            return false;
         }
-        catch (Exception e)
-        {
-            Toast.makeText(MeetingAddActivity.this, "Не верно заполнена дата"+desc, Toast.LENGTH_LONG).show();
-        }
+        return true;
     }
-    public void parseTime(String time, String desc)
-    {
+
+    static boolean isValidTime(String value, String datePattern) {
+
+        if (value == null || datePattern == null || datePattern.length() <= 0) {
+            return false;
+        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
+        formatter.setLenient(false);
+
         try {
-
-            String[] parse = time.split(":");
-
+            formatter.parse(value);
+        } catch (ParseException e) {
+            return false;
         }
-        catch (Exception e)
-        {
-            Toast.makeText(MeetingAddActivity.this, "Не верно заполнено время"+desc, Toast.LENGTH_LONG).show();
-        }
+        return true;
     }
 }
