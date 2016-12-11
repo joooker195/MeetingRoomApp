@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="General"
+        android:title="General"
+        android:summary="General">
+
+
+        <EditTextPreference
+            android:title="Имя"
+            android:summary="Meeting"
+            android:key="editName"
+            ></EditTextPreference>
+
+        <EditTextPreference
+            android:title="Должность"
+            android:summary="No"
+            android:key="editProf"
+            ></EditTextPreference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

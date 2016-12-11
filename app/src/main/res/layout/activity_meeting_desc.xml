@@ -94,7 +94,8 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Подтвердить \nучастие" />
+            android:text="Подтвердить \nучастие"
+            android:id="@+id/add_party_button" />
 
     </LinearLayout>
 

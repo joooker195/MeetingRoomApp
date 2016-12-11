@@ -183,6 +183,7 @@ public class MeetingListActivity extends AppCompatActivity
             case R.id.nav_search:
                 break;
             case R.id.nav_settings:
+                startActivity(new Intent(MeetingListActivity.this, SettingPreference.class));
                 break;
             case R.id.nav_faq:
                 break;

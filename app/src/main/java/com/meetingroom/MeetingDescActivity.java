@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
@@ -30,12 +32,15 @@ public class MeetingDescActivity extends AppCompatActivity {
 
     private TextView mTitle;
     private TextView mDesc;
-    private ExpandableListView mPrtys;
+    private ExpandableListView mPartys;
     private TextView mBegin;
     private TextView mEnd;
     private TextView mPriority;
     private TextView mTextPartys;
 
+    private Button mAddPartyButton;
+
+    private Map<String, Map<String, String>> list  = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,107 +53,128 @@ public class MeetingDescActivity extends AppCompatActivity {
         mBegin = (TextView) findViewById(R.id.desc_begin);
         mEnd = (TextView) findViewById(R.id.desc_end);
         mPriority = (TextView) findViewById(R.id.desc_priority);
-        mPrtys = (ExpandableListView) findViewById(R.id.desc_party);
+        mPartys = (ExpandableListView) findViewById(R.id.desc_party);
         mTextPartys = (TextView) findViewById(R.id.text_partys);
+        mAddPartyButton = (Button) findViewById(R.id.add_party_button);
 
 
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
 
-            mRef.addValueEventListener(new ValueEventListener() {
+        mRef.addValueEventListener(new ValueEventListener() {
 
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    try {
+                try {
 
-                        Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                        mTitle.setText(map.get("n_" + KEY).get("title").toString());
-                        mDesc.setText(map.get("n_" + KEY).get("desc").toString());
-                        mBegin.setText("Начало: " + map.get("n_" + KEY).get("begin").toString());
-                        mEnd.setText("Конец: " + map.get("n_" + KEY).get("end").toString());
-                        mPriority.setText("Приоритет: " + map.get("n_" + KEY).get("priority").toString());
-                    }
-                    catch (Exception e)
-                    {
+                    Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
+                    mTitle.setText(map.get("n_" + KEY).get("title").toString());
+                    mDesc.setText(map.get("n_" + KEY).get("desc").toString());
+                    mBegin.setText("Начало: " + map.get("n_" + KEY).get("begin").toString());
+                    mEnd.setText("Конец: " + map.get("n_" + KEY).get("end").toString());
+                    mPriority.setText("Приоритет: " + map.get("n_" + KEY).get("priority").toString());
 
-                    }
+                }
+                catch (Exception e)
+                {
 
                 }
 
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
+            }
 
-                }
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
 
-            });
+            }
 
+        });
 
-
-
-
-        try {
-            mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY + "/partys");
-            mRefListPartys.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    try {
-                        mTextPartys.setText("Участники:");
-                        Map<String, Map<String, String>> list = dataSnapshot.getValue(Map.class);
-
-                        Map<String, String> mapDataList;
-                        Map<String, String> mapChildDataList;
-
-                        ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
-                        ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
-                        ArrayList<Map<String, String>> childDataItemList;
-
-                        for (int i = 0; i < list.size(); i++) {
-                            Map<String, String> childList = list.get("p_" + i);
-                            mapDataList = new HashMap<>();
-                            mapDataList.put("number", String.valueOf(i + 1) + ") " + childList.get("name"));
-
-                            groupDataList.add(mapDataList);
-
-                            mapChildDataList = new HashMap<>();
-                            childDataItemList = new ArrayList<>();
-                            mapChildDataList.put("desc", "Должность: " + childList.get("prof"));
-                            childDataItemList.add(mapChildDataList);
-
-                            childDataList.add(childDataItemList);
-                        }
-
-
-                        String groupFrom[] = new String[]{"number"};
-                        int groupTo[] = new int[]{android.R.id.text1};
-
-                        String childFrom[] = new String[]{"desc"};
-                        int childTo[] = new int[]{android.R.id.text1};
-
-                        SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
-                                MeetingDescActivity.this, groupDataList,
-                                android.R.layout.simple_expandable_list_item_1, groupFrom,
-                                groupTo, childDataList, android.R.layout.simple_list_item_1,
-                                childFrom, childTo);
-
-                        mPrtys.setAdapter(adapter);
-                    }
-                    catch (Exception e)
-                    {
-                        mTextPartys.setText("Участники: \nВ списке пока нет участников");
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
-
-                }
-            });
-        }
-        catch (Exception e)
+        mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY + "/partys");
+        mRefListPartys.addValueEventListener(new ValueEventListener()
         {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    mTextPartys.setText("Участники:");
+                    list = dataSnapshot.getValue(Map.class);
 
-        }
+
+                    for(int i=0; i<list.size(); i++)
+                    {//проверка на участие во встече, если участвуешь, убирается кнопка
+                        String a = dataSnapshot.child("p_"+i).child("name").getValue(String.class);
+                        if(a.equals(GenereratorKey.getLogin()))
+                        {
+                            mAddPartyButton.setVisibility(Button.INVISIBLE);
+                        }
+                    }
+
+                    Map<String, String> mapDataList;
+                    Map<String, String> mapChildDataList;
+
+                    //
+                    ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
+                    ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
+                    ArrayList<Map<String, String>> childDataItemList;
+
+                    for (int i = 0; i < list.size(); i++) {
+                        Map<String, String> childList = list.get("p_" + i);
+                        mapDataList = new HashMap<>();
+                        mapDataList.put("number", String.valueOf(i + 1) + ") " + childList.get("name"));
+
+                        groupDataList.add(mapDataList);
+
+                        mapChildDataList = new HashMap<>();
+                        childDataItemList = new ArrayList<>();
+                        mapChildDataList.put("desc", "Должность: " + childList.get("prof"));
+                        childDataItemList.add(mapChildDataList);
+
+                        childDataList.add(childDataItemList);
+                    }
+
+
+                    String groupFrom[] = new String[]{"number"};
+                    int groupTo[] = new int[]{android.R.id.text1};
+
+                    String childFrom[] = new String[]{"desc"};
+                    int childTo[] = new int[]{android.R.id.text1};
+
+                    SimpleExpandableListAdapter adapter = new SimpleExpandableListAdapter(
+                            MeetingDescActivity.this, groupDataList,
+                            android.R.layout.simple_expandable_list_item_1, groupFrom,
+                            groupTo, childDataList, android.R.layout.simple_list_item_1,
+                            childFrom, childTo);
+
+                    mPartys.setAdapter(adapter);
+                }
+                catch (Exception e)
+                {
+                    mTextPartys.setText("Участники: \nВ списке пока нет участников");
+                    list = new HashMap<>();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
+
+
+        mAddPartyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                    Firebase mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("name");
+                    mChildRefPartys.setValue(GenereratorKey.getLogin());
+                    mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("prof");
+                    mChildRefPartys.setValue(GenereratorKey.getProf());
+                    mAddPartyButton.setVisibility(Button.INVISIBLE);
+
+            }
+
+        });
     }
 
 
