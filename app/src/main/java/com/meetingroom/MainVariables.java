@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * Created by Ксю on 11.12.2016.
  */
-public class GenereratorKey {
+public class MainVariables {
 
     private static int key = 50;
     private static String prof = "No";
@@ -18,7 +18,7 @@ public class GenereratorKey {
     }
 
     public static void setLogin(String login) {
-        GenereratorKey.login = login;
+        MainVariables.login = login;
     }
 
     public static String getProf() {
@@ -26,7 +26,7 @@ public class GenereratorKey {
     }
 
     public static void setProf(String prof) {
-        GenereratorKey.prof = prof;
+        MainVariables.prof = prof;
     }
 
     public static String getKey()

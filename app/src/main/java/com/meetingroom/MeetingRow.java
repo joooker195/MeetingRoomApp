@@ -10,6 +10,8 @@ public class MeetingRow {
     private String key;
 
     public String getKey() {
+        //Класс для создания cardview
+
         return key;
     }
 

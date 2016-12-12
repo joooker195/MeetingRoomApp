@@ -11,6 +11,7 @@ public class MeetingApp extends Application
 {
     @Override
     public void onCreate() {
+        //класс для конекта с firebase
         super.onCreate();
         Firebase.setAndroidContext(this);
     }

@@ -20,8 +20,8 @@ public class SettingPreference  extends PreferenceActivity implements Preference
         mEditName = findPreference("editName");
         mEditProf = findPreference("editProf");
 
-        mEditName.setSummary(GenereratorKey.getLogin());
-        mEditProf.setSummary(GenereratorKey.getProf());
+        mEditName.setSummary(MainVariables.getLogin());
+        mEditProf.setSummary(MainVariables.getProf());
 
         mEditProf.setOnPreferenceChangeListener(this);
         mEditName.setOnPreferenceChangeListener(this);
@@ -33,12 +33,12 @@ public class SettingPreference  extends PreferenceActivity implements Preference
     {
         if(preference.equals(mEditName))
         {
-            GenereratorKey.setLogin(o.toString());
+            MainVariables.setLogin(o.toString());
             preference.setSummary(o.toString());
         }
         if(preference.equals(mEditProf))
         {
-            GenereratorKey.setProf(o.toString());
+            MainVariables.setProf(o.toString());
             preference.setSummary(o.toString());
         }
         return true;

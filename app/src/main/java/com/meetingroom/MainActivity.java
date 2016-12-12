@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
 
+    //класс для аутентификации
 
     private EditText mPasswordText;
     private EditText mEmailText;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        //если аутентификация прошла, заходим в программу и не выходим от туда
         mAuthListener = new FirebaseAuth.AuthStateListener() {
 
             @Override
@@ -74,12 +76,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startSignIn() {
+
+        //проверка аутентификации
         mProgressBar.setVisibility(ProgressBar.VISIBLE);
         String email = mEmailText.getText().toString();
         String password = mPasswordText.getText().toString();
 
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(MainActivity.this, "Fields are empty", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Заполнены не все поля", Toast.LENGTH_LONG).show();
             mProgressBar.setVisibility(ProgressBar.INVISIBLE);
         }
         else
@@ -88,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (!task.isSuccessful()) {
-                        Toast.makeText(MainActivity.this, "Sing In Problem", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Аутентификация не пройдена", Toast.LENGTH_LONG).show();
                         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                     }
                 }

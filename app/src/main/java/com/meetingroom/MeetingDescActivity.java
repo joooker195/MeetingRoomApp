@@ -42,6 +42,8 @@ public class MeetingDescActivity extends AppCompatActivity {
 
     private Map<String, Map<String, String>> list  = new HashMap<>();
 
+    //жесть, 4 метода занимают 230 строк...
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,16 +59,17 @@ public class MeetingDescActivity extends AppCompatActivity {
         mTextPartys = (TextView) findViewById(R.id.text_partys);
         mAddPartyButton = (Button) findViewById(R.id.add_party_button);
 
-
+        //список встреч
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
-
         mRef.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                //метод для получения список встреч в реальном времени
                 try {
-
+                    //получаем мапу, и по ключу(тому самому, что в при вызове интента мы получили через одно место), находим
+                    // нужный нам список)
                     Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
                     mTitle.setText(map.get("n_" + KEY).get("title").toString());
                     mDesc.setText(map.get("n_" + KEY).get("desc").toString());
@@ -89,6 +92,7 @@ public class MeetingDescActivity extends AppCompatActivity {
 
         });
 
+        //список участников(отдельно, так как это подсписок)
         mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY + "/partys");
         mRefListPartys.addValueEventListener(new ValueEventListener()
         {
@@ -96,27 +100,32 @@ public class MeetingDescActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
                     mTextPartys.setText("Участники:");
-                    list = dataSnapshot.getValue(Map.class);
 
+                    list = dataSnapshot.getValue(Map.class);
 
                     for(int i=0; i<list.size(); i++)
                     {//проверка на участие во встече, если участвуешь, убирается кнопка
                         String a = dataSnapshot.child("p_"+i).child("name").getValue(String.class);
-                        if(a.equals(GenereratorKey.getLogin()))
+                        //MainVariables связана с настройками,где мы указываем свое имя и должность
+                        if(a.equals(MainVariables.getLogin()))
                         {
                             mAddPartyButton.setVisibility(Button.INVISIBLE);
                         }
                     }
 
+
+                    //вся ахинея, что написана ниже, нужна для отображения списка, так как я использовала ExpandableListView,
+                    //чтобы выводился участник, и при разворачивании его подсписка отображалась его должность
                     Map<String, String> mapDataList;
                     Map<String, String> mapChildDataList;
 
-                    //
                     ArrayList<Map<String, String>> groupDataList = new ArrayList<>();
                     ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
                     ArrayList<Map<String, String>> childDataItemList;
 
                     for (int i = 0; i < list.size(); i++) {
+                        //так как мы не удаляем участников, id можно вести по порядку
+                        //здесь получаем мапу, и дальше создаем адаптер
                         Map<String, String> childList = list.get("p_" + i);
                         mapDataList = new HashMap<>();
                         mapDataList.put("number", String.valueOf(i + 1) + ") " + childList.get("name"));
@@ -146,9 +155,13 @@ public class MeetingDescActivity extends AppCompatActivity {
 
                     mPartys.setAdapter(adapter);
                 }
+
                 catch (Exception e)
                 {
+                    //если списка с участниками нет, то падает ошибка, что не находтся ключ partys.
+                    //обработала ее и вывела сообщение
                     mTextPartys.setText("Участники: \nВ списке пока нет участников");
+                    //без инициализации, которая вот тут происходит, почему то падает NPE (не знаю почему)
                     list = new HashMap<>();
                 }
 
@@ -166,11 +179,12 @@ public class MeetingDescActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                    Firebase mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("name");
-                    mChildRefPartys.setValue(GenereratorKey.getLogin());
-                    mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("prof");
-                    mChildRefPartys.setValue(GenereratorKey.getProf());
-                    mAddPartyButton.setVisibility(Button.INVISIBLE);
+                //добавляем участника
+                Firebase mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("name");
+                mChildRefPartys.setValue(MainVariables.getLogin());
+                mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("prof");
+                mChildRefPartys.setValue(MainVariables.getProf());
+                mAddPartyButton.setVisibility(Button.INVISIBLE);
 
             }
 

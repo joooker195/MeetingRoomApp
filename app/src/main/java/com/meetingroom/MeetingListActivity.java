@@ -20,8 +20,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MeetingListActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -37,8 +35,6 @@ public class MeetingListActivity extends AppCompatActivity
     private int mMonth;
     private int mDay;
 
-    private Map<String,String> key = new HashMap<>();
-
     private TextView dateText;
 
 
@@ -51,7 +47,9 @@ public class MeetingListActivity extends AppCompatActivity
         mMeetingList.setHasFixedSize(true);
         mMeetingList.setLayoutManager(new LinearLayoutManager(this));
 
+
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Meetings");
+
         date = Calendar.getInstance();
         mYear = date.get(Calendar.YEAR);
         mMonth = date.get(Calendar.MONTH);
@@ -83,13 +81,17 @@ public class MeetingListActivity extends AppCompatActivity
 
                     @Override
                     protected void populateViewHolder(final MeetingViewHolder viewHolder, final MeetingRow model, int position) {
+
+                        //получаем значения по ссылки mDatabase и отправляем их в cardview (CardView!!!)
                         viewHolder.setTitle(model.getTitle());
                         viewHolder.setDesc(model.getDesc());
-                        key.put(model.getDesc(), String.valueOf(position));
 
                         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                //метод для выбора cardview и просмотра подробной информации
+                                //model.getKey это идентификатор конкретного cardview. Криво(очень криво), передаем его в интент,
+                                //который будет отображать подробную информацию
                                 MeetingDescActivity.KEY = model.getKey();
                                 Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
                                 startActivity(intent);
@@ -109,6 +111,7 @@ public class MeetingListActivity extends AppCompatActivity
 
     private static class MeetingViewHolder extends RecyclerView.ViewHolder
     {
+        //класс для добавления информации в cardview (RecyclerView!!!)
         View mView;
 
 

@@ -44,7 +44,8 @@ public class MeetingAddActivity extends AppCompatActivity {
         mEditTimeEnd = (EditText) findViewById(R.id.time_end);
         mEditPriority = (EditText) findViewById(R.id.add_priority);
 
-        key = GenereratorKey.getKey();
+        //получаем уникальный key отдельной встречи (реалиовано рандомом)
+        key = MainVariables.getKey();
 
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
 
@@ -53,16 +54,18 @@ public class MeetingAddActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 try {
+                    //создаем ссылку на встречу
                     Firebase mChildRef = mRef.child("n_" + key);
 
+                    //проверяем, чтобы все поля были не пустые
                     boolean isEnptyFlag = (mEditTitle.getText().toString().equals("") || mEditDesc.getText().toString().equals("")
                             || mEditDateBegin.getText().toString().equals("") || mEditTimeBegin.getText().toString().equals("")
                             || mEditDateEnd.getText().toString().equals("")  || mEditTimeEnd.getText().toString().equals("")
                             || mEditPriority.getText().toString().equals(""));
-
+                    //правильность ввода даты
                     boolean parseDateFlag = (isValidDate(mEditDateBegin.getText().toString(), "dd.MM.yyyy") &&
                                                 isValidDate(mEditDateEnd.getText().toString(), "dd.MM.yyyy"));
-
+                    //правильность ввода времени
                     boolean parseTimeFlag = (isValidTime(mEditTimeBegin.getText().toString(), "HH:mm") &&
                             isValidTime(mEditTimeEnd.getText().toString(), "HH:mm"));
 
@@ -71,6 +74,8 @@ public class MeetingAddActivity extends AppCompatActivity {
                         throw new Exception();
                     }
 
+                    //создаем новую встречу
+                    //создаем новый ключ для текущей ссылки и добавляем значение
                     Firebase mChildRefTitle = mChildRef.child("title");
                     mChildRefTitle.setValue(mEditTitle.getText().toString());
 
@@ -93,6 +98,7 @@ public class MeetingAddActivity extends AppCompatActivity {
                 }
                 catch (Exception e)
                 {
+                    //если что то заполнено не верно, выбрасываем ошибку и обрабатываем ее
                     Toast.makeText(MeetingAddActivity.this, "Проверьте правильность заполнения полей", Toast.LENGTH_LONG).show();
                 }
             }
@@ -121,6 +127,7 @@ public class MeetingAddActivity extends AppCompatActivity {
 
     static boolean isValidDate(String value, String datePattern) {
 
+        //метод проверки правильнлсти ввода даты
         if (value == null || datePattern == null || datePattern.length() <= 0) {
             return false;
         }
@@ -138,6 +145,7 @@ public class MeetingAddActivity extends AppCompatActivity {
 
     static boolean isValidTime(String value, String datePattern) {
 
+        //метод проверки правильнлсти ввода времени
         if (value == null || datePattern == null || datePattern.length() <= 0) {
             return false;
         }
