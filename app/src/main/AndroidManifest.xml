@@ -27,6 +27,7 @@
         <activity
             android:name=".SettingPreference"
             android:label="Settings" />
+        <activity android:name=".SearchActivity"></activity>
     </application>
 
 </manifest>

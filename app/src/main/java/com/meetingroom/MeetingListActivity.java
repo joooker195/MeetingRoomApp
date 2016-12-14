@@ -93,8 +93,11 @@ public class MeetingListActivity extends AppCompatActivity
                                 //model.getKey это идентификатор конкретного cardview. Криво(очень криво), передаем его в интент,
                                 //который будет отображать подробную информацию
                                 MeetingDescActivity.KEY = model.getKey();
+
                                 Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
+                                finish();
                             }
                         });
 
@@ -184,6 +187,7 @@ public class MeetingListActivity extends AppCompatActivity
                 startActivity(new Intent(MeetingListActivity.this, MeetingAddActivity.class));
                 break;
             case R.id.nav_search:
+                startActivity(new Intent(MeetingListActivity.this, SearchActivity.class));
                 break;
             case R.id.nav_settings:
                 startActivity(new Intent(MeetingListActivity.this, SettingPreference.class));

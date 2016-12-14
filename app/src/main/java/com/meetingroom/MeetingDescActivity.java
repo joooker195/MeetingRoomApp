@@ -204,13 +204,17 @@ public class MeetingDescActivity extends AppCompatActivity {
 
         if (id == R.id.action_back) {
             Intent intent = new Intent(MeetingDescActivity.this, MeetingListActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            finish();
         }
         if (id == R.id.action_del)
         {
             delMeeting();
             Intent intent = new Intent(MeetingDescActivity.this, MeetingListActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
