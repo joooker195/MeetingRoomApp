@@ -68,9 +68,11 @@ public class SearchActivity extends AppCompatActivity {
                                 MeetingRow meeting = new MeetingRow();
                                 String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
                                 String title = map.get(map.keySet().toArray()[i].toString()).get("title");
+                                String key = map.get(map.keySet().toArray()[i].toString()).get("key");
                                 if(desc.equals(mEditText.getText().toString())) {
                                     meeting.setTitle(title);
                                     meeting.setDesc(desc);
+                                    meeting.setKey(key);
                                     listMeetings.add(meeting);
                                 }
                             }
@@ -111,15 +113,29 @@ public class SearchActivity extends AppCompatActivity {
 
         @Override
         public MeetingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View mVewCard = LayoutInflater.from(parent.getContext()).inflate(R.layout.meeting_row, parent, false);
+            final View mVewCard = LayoutInflater.from(parent.getContext()).inflate(R.layout.meeting_row, parent, false);
             MeetingViewHolder mMeetingViewHolder = new MeetingViewHolder(mVewCard);
+
+
             return mMeetingViewHolder;
         }
 
         @Override
-        public void onBindViewHolder(MeetingViewHolder holder, int position) {
+        public void onBindViewHolder(MeetingViewHolder holder, final int position) {
             holder.mTitle.setText(meetings.get(position).getTitle());
             holder.mDesc.setText(meetings.get(position).getDesc());
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    MeetingDescActivity.KEY = meetings.get(position).getKey();
+
+                    Intent intent= new Intent(SearchActivity.this, MeetingDescActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+            });
 
         }
 
