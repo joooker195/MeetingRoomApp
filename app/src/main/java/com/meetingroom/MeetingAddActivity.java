@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
+import com.meetingroom.adapter.GoogleCalendar;
 import com.meetingroom.variables.MainVariables;
 
 import java.text.ParseException;
@@ -84,17 +85,25 @@ public class MeetingAddActivity extends AppCompatActivity {
 
                     //создаем новую встречу
                     //создаем новый ключ для текущей ссылки и добавляем значение
+
+                    String beginDate = mEditDateBegin.getText().toString();
+                    String beginTime = mEditTimeBegin.getText().toString();
+                    String endDate = mEditDateEnd.getText().toString();
+                    String endTime = mEditTimeEnd.getText().toString();
+                    String title = mEditTitle.getText().toString();
+                    String desc = mEditDesc.getText().toString();
+
                     Firebase mChildRefTitle = mChildRef.child("title");
-                    mChildRefTitle.setValue(mEditTitle.getText().toString());
+                    mChildRefTitle.setValue(title);
 
                     Firebase mChildRefDesc = mChildRef.child("desc");
-                    mChildRefDesc.setValue(mEditDesc.getText().toString());
+                    mChildRefDesc.setValue(desc);
 
                     Firebase mChildRefBegin = mChildRef.child("begin");
-                    mChildRefBegin.setValue(mEditDateBegin.getText().toString() + " " + mEditTimeBegin.getText());
+                    mChildRefBegin.setValue(beginDate+" "+beginTime);
 
                     Firebase mChildRefEnd = mChildRef.child("end");
-                    mChildRefEnd.setValue(mEditDateEnd.getText().toString() + " " + mEditTimeEnd.getText());
+                    mChildRefEnd.setValue(endDate + " "+ endTime);
 
                     Firebase mChildRefPrior = mChildRef.child("priority");
                     mChildRefPrior.setValue(mEditPriority.getText().toString());
@@ -103,6 +112,8 @@ public class MeetingAddActivity extends AppCompatActivity {
                     mChildRefKey.setValue(key);
 
                     getNotification("Добавлена новая встреча!", mEditTitle.getText().toString());
+
+                    GoogleCalendar.init(MeetingAddActivity.this, beginDate, beginTime, endDate, endTime, title, desc);
 
                     Intent intent= new Intent(MeetingAddActivity.this, MeetingListActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
