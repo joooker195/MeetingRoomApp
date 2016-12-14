@@ -3,9 +3,9 @@ package com.meetingroom;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,22 +19,14 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Map;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
 
     private RecyclerView mMeetingList;
-
-    private DatabaseReference mDatabase;
-
-    private Firebase fb;
 
     private EditText mEditText;
     private Button mButtonSearch;
@@ -50,23 +42,17 @@ public class SearchActivity extends AppCompatActivity {
 
         mEditText = (EditText) findViewById(R.id.search_edit);
         mButtonSearch = (Button) findViewById(R.id.search);
-
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("Meetings");
-
-
     }
 
 
     protected void onStart() {
 
         super.onStart();
-
-
         mButtonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-               Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
+                Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
                 mRef.addValueEventListener(new ValueEventListener() {
 
                     @Override
@@ -75,27 +61,27 @@ public class SearchActivity extends AppCompatActivity {
                         try {
 
                             Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                            ArrayList<MeetingRow> list = new ArrayList<>();
+                            ArrayList<MeetingRow> listMeetings = new ArrayList<>();
 
                             for(int i=0; i<map.keySet().toArray().length; i++)
                             {
-                                MeetingRow a = new MeetingRow();
+                                MeetingRow meeting = new MeetingRow();
                                 String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
                                 String title = map.get(map.keySet().toArray()[i].toString()).get("title");
                                 if(desc.equals(mEditText.getText().toString())) {
-                                    a.setTitle(title);
-                                    a.setDesc(desc);
-                                    list.add(a);
+                                    meeting.setTitle(title);
+                                    meeting.setDesc(desc);
+                                    listMeetings.add(meeting);
                                 }
                             }
 
-                            RVAdapter adapter = new RVAdapter(list);
+                            RVAdapter adapter = new RVAdapter(listMeetings);
                             mMeetingList.setAdapter(adapter);
 
                         }
                         catch (Exception e)
                         {
-
+                            Log.e("E_VALUE", e.getMessage());
                         }
 
                     }
@@ -114,9 +100,8 @@ public class SearchActivity extends AppCompatActivity {
 
     }
 
+    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.MeetingViewHolder>{
 
-
-    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.PersonViewHolder>{
         ArrayList<MeetingRow> meetings = new ArrayList<>();
 
         public RVAdapter(ArrayList<MeetingRow> meetings)
@@ -125,14 +110,14 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         @Override
-        public PersonViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.meeting_row, parent, false);
-            PersonViewHolder pvh = new PersonViewHolder(v);
-            return pvh;
+        public MeetingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View mVewCard = LayoutInflater.from(parent.getContext()).inflate(R.layout.meeting_row, parent, false);
+            MeetingViewHolder mMeetingViewHolder = new MeetingViewHolder(mVewCard);
+            return mMeetingViewHolder;
         }
 
         @Override
-        public void onBindViewHolder(PersonViewHolder holder, int position) {
+        public void onBindViewHolder(MeetingViewHolder holder, int position) {
             holder.mTitle.setText(meetings.get(position).getTitle());
             holder.mDesc.setText(meetings.get(position).getDesc());
 
@@ -143,19 +128,16 @@ public class SearchActivity extends AppCompatActivity {
             return meetings.size();
         }
 
-        public  class PersonViewHolder extends RecyclerView.ViewHolder {
-            CardView cv;
+        public  class MeetingViewHolder extends RecyclerView.ViewHolder {
             TextView mTitle;
             TextView mDesc;
-            PersonViewHolder(View itemView) {
+            MeetingViewHolder(View itemView) {
                 super(itemView);
-//                cv = (CardView)itemView.findViewById(R.id.meeting_list_search);
                 mTitle = (TextView)itemView.findViewById(R.id.meeting_title);
                 mDesc = (TextView)itemView.findViewById(R.id.meeting_desc);
             }
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
