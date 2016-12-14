@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
+import com.meetingroom.variables.MainVariables;
+
 /**
  * Created by Ксю on 11.12.2016.
  */

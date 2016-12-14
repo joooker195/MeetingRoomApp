@@ -9,25 +9,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.meetingroom.adapter.RVAdapter;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Map;
 
 public class MeetingListActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private FirebaseAuth mAuth;
-
     private RecyclerView mMeetingList;
-
     private DatabaseReference mDatabase;
 
     private Calendar date;
@@ -72,7 +76,7 @@ public class MeetingListActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder> firebaseRecyclerAdapter = new
+     /*   FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder> firebaseRecyclerAdapter = new
                 FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder>(
                         MeetingRow.class,
                         R.layout.meeting_row,
@@ -106,13 +110,48 @@ public class MeetingListActivity extends AppCompatActivity
                     }
 
                 };
-        mMeetingList.setAdapter(firebaseRecyclerAdapter);
+        mMeetingList.setAdapter(firebaseRecyclerAdapter);*/
 
+        Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
+        mRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
 
+                    Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
+                    ArrayList<MeetingRow> listMeetings = new ArrayList<>();
+
+                    for (int i = 0; i < map.keySet().toArray().length; i++) {
+                        MeetingRow meeting = new MeetingRow();
+                        String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
+                        String title = map.get(map.keySet().toArray()[i].toString()).get("title");
+                        String key = map.get(map.keySet().toArray()[i].toString()).get("key");
+
+                        meeting.setTitle(title);
+                        meeting.setDesc(desc);
+                        meeting.setKey(key);
+                        listMeetings.add(meeting);
+                    }
+
+                    RVAdapter adapter = new RVAdapter(listMeetings, MeetingListActivity.this);
+                    mMeetingList.setAdapter(adapter);
+
+                } catch (Exception e) {
+                    Log.e("E_VALUE", e.getMessage());
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
     }
 
 
-    private static class MeetingViewHolder extends RecyclerView.ViewHolder
+
+
+  /*  private static class MeetingViewHolder extends RecyclerView.ViewHolder
     {
         //класс для добавления информации в cardview (RecyclerView!!!)
         View mView;
@@ -135,9 +174,7 @@ public class MeetingListActivity extends AppCompatActivity
             meeting_desc.setText(desc);
 
         }
-    }
-
-
+    }*/
 
     @Override
     public void onBackPressed() {
@@ -187,7 +224,7 @@ public class MeetingListActivity extends AppCompatActivity
                 startActivity(new Intent(MeetingListActivity.this, MeetingAddActivity.class));
                 break;
             case R.id.nav_search:
-                startActivity(new Intent(MeetingListActivity.this, SearchActivity.class));
+                startActivity(new Intent(MeetingListActivity.this, MeetingSearchActivity.class));
                 break;
             case R.id.nav_settings:
                 startActivity(new Intent(MeetingListActivity.this, SettingPreference.class));

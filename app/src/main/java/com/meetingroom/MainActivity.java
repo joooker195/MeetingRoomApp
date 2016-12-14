@@ -48,8 +48,11 @@ public class MainActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if(firebaseAuth.getCurrentUser() != null)
                 {
-                    startActivity(new Intent(MainActivity.this, MeetingListActivity.class));
+                    Intent intent= new Intent(MainActivity.this, MeetingListActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                     mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                    finish();
                 }
             }
         };

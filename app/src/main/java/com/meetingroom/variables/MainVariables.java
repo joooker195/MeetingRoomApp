@@ -1,4 +1,4 @@
-package com.meetingroom;
+package com.meetingroom.variables;
 
 import java.util.Random;
 

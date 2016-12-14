@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
+import com.meetingroom.variables.MainVariables;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

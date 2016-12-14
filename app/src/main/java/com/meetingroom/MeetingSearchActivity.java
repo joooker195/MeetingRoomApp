@@ -1,29 +1,29 @@
 package com.meetingroom;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.meetingroom.adapter.RVAdapter;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-public class SearchActivity extends AppCompatActivity {
+public class MeetingSearchActivity extends AppCompatActivity {
 
 
     private RecyclerView mMeetingList;
@@ -77,7 +77,7 @@ public class SearchActivity extends AppCompatActivity {
                                 }
                             }
 
-                            RVAdapter adapter = new RVAdapter(listMeetings);
+                            RVAdapter adapter = new RVAdapter(listMeetings, MeetingSearchActivity.this);
                             mMeetingList.setAdapter(adapter);
 
                         }
@@ -85,6 +85,9 @@ public class SearchActivity extends AppCompatActivity {
                         {
                             Log.e("E_VALUE", e.getMessage());
                         }
+
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(mButtonSearch.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
                     }
 
@@ -102,7 +105,7 @@ public class SearchActivity extends AppCompatActivity {
 
     }
 
-    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.MeetingViewHolder>{
+    /*public class RVAdapter extends RecyclerView.Adapter<RVAdapter.MeetingViewHolder>{
 
         ArrayList<MeetingRow> meetings = new ArrayList<>();
 
@@ -115,7 +118,6 @@ public class SearchActivity extends AppCompatActivity {
         public MeetingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             final View mVewCard = LayoutInflater.from(parent.getContext()).inflate(R.layout.meeting_row, parent, false);
             MeetingViewHolder mMeetingViewHolder = new MeetingViewHolder(mVewCard);
-
 
             return mMeetingViewHolder;
         }
@@ -130,7 +132,7 @@ public class SearchActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     MeetingDescActivity.KEY = meetings.get(position).getKey();
 
-                    Intent intent= new Intent(SearchActivity.this, MeetingDescActivity.class);
+                    Intent intent= new Intent(MeetingSearchActivity.this, MeetingDescActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
@@ -153,7 +155,7 @@ public class SearchActivity extends AppCompatActivity {
                 mDesc = (TextView)itemView.findViewById(R.id.meeting_desc);
             }
         }
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -167,7 +169,7 @@ public class SearchActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_searching_back) {
-            Intent intent = new Intent(SearchActivity.this, MainActivity.class);
+            Intent intent = new Intent(MeetingSearchActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();

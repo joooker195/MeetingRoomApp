@@ -15,6 +15,7 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.meetingroom.variables.MainVariables;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,8 +28,6 @@ public class MeetingDescActivity extends AppCompatActivity {
     private Firebase mRefListPartys;
 
     public static String KEY = "";
-
-    Map<String, Map<String, String>> delmap = new HashMap<>();
 
     private TextView mTitle;
     private TextView mDesc;
@@ -190,7 +189,6 @@ public class MeetingDescActivity extends AppCompatActivity {
 
         });
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
