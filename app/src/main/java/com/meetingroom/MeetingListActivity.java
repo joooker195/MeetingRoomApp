@@ -38,6 +38,7 @@ public class MeetingListActivity extends AppCompatActivity
     private int mYear;
     private int mMonth;
     private int mDay;
+    private String mDate;
 
     private TextView dateText;
 
@@ -59,10 +60,12 @@ public class MeetingListActivity extends AppCompatActivity
         mMonth = date.get(Calendar.MONTH);
         mDay = date.get(Calendar.DAY_OF_MONTH);
         dateText= (TextView) findViewById(R.id.date);
-        dateText.setText(new StringBuilder()
+        mDate = new StringBuilder()
                 .append(mDay).append(".")
                 .append(mMonth+1).append(".")
-                .append(mYear).append(" "));
+                .append(mYear).toString();
+
+        dateText.setText(mDate);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -75,42 +78,6 @@ public class MeetingListActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-
-     /*   FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<MeetingRow, MeetingViewHolder>(
-                        MeetingRow.class,
-                        R.layout.meeting_row,
-                        MeetingViewHolder.class,
-                        mDatabase) {
-
-                    @Override
-                    protected void populateViewHolder(final MeetingViewHolder viewHolder, final MeetingRow model, int position) {
-
-                        //получаем значения по ссылки mDatabase и отправляем их в cardview (CardView!!!)
-                        viewHolder.setTitle(model.getTitle());
-                        viewHolder.setDesc(model.getDesc());
-
-                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                //метод для выбора cardview и просмотра подробной информации
-                                //model.getKey это идентификатор конкретного cardview. Криво(очень криво), передаем его в интент,
-                                //который будет отображать подробную информацию
-                                MeetingDescActivity.KEY = model.getKey();
-
-                                Intent intent= new Intent(MeetingListActivity.this, MeetingDescActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                                finish();
-                            }
-                        });
-
-
-
-                    }
-
-                };
-        mMeetingList.setAdapter(firebaseRecyclerAdapter);*/
 
         Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
         mRef.addValueEventListener(new ValueEventListener() {
@@ -126,11 +93,14 @@ public class MeetingListActivity extends AppCompatActivity
                         String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
                         String title = map.get(map.keySet().toArray()[i].toString()).get("title");
                         String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-
-                        meeting.setTitle(title);
-                        meeting.setDesc(desc);
-                        meeting.setKey(key);
-                        listMeetings.add(meeting);
+                        String[] date = map.get(map.keySet().toArray()[i].toString()).get("begin").split(" ");
+                        if (date[0].equals(mDate)) {
+                            meeting.setTitle(title);
+                            meeting.setDesc(desc);
+                            meeting.setKey(key);
+                            meeting.setDate(date[0]);
+                            listMeetings.add(meeting);
+                        }
                     }
 
                     RVAdapter adapter = new RVAdapter(listMeetings, MeetingListActivity.this);
@@ -148,33 +118,6 @@ public class MeetingListActivity extends AppCompatActivity
         });
     }
 
-
-
-
-  /*  private static class MeetingViewHolder extends RecyclerView.ViewHolder
-    {
-        //класс для добавления информации в cardview (RecyclerView!!!)
-        View mView;
-
-
-        public MeetingViewHolder(View itemView) {
-            super(itemView);
-
-            mView = itemView;
-        }
-
-        public void setTitle(String title)
-        {
-            TextView meeting_title = (TextView) mView.findViewById(R.id.meeting_title);
-            meeting_title.setText(title);
-        }
-        public void setDesc(String desc)
-        {
-            TextView meeting_desc = (TextView) mView.findViewById(R.id.meeting_desc);
-            meeting_desc.setText(desc);
-
-        }
-    }*/
 
     @Override
     public void onBackPressed() {

@@ -45,4 +45,9 @@ public class SettingPreference  extends PreferenceActivity implements Preference
         }
         return true;
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
 }

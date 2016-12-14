@@ -48,6 +48,9 @@ public class MeetingSearchActivity extends AppCompatActivity {
     protected void onStart() {
 
         super.onStart();
+
+        viewCards();
+
         mButtonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -69,7 +72,8 @@ public class MeetingSearchActivity extends AppCompatActivity {
                                 String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
                                 String title = map.get(map.keySet().toArray()[i].toString()).get("title");
                                 String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-                                if(desc.equals(mEditText.getText().toString())) {
+                                if(desc.equals(mEditText.getText().toString()) || mEditText.getText().equals(""))
+                                {
                                     meeting.setTitle(title);
                                     meeting.setDesc(desc);
                                     meeting.setKey(key);
@@ -97,65 +101,59 @@ public class MeetingSearchActivity extends AppCompatActivity {
                     }
 
                 });
-
-
             }
         });
 
 
     }
 
-    /*public class RVAdapter extends RecyclerView.Adapter<RVAdapter.MeetingViewHolder>{
+    public void viewCards()
+    {
+        Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
+        mRef.addValueEventListener(new ValueEventListener() {
 
-        ArrayList<MeetingRow> meetings = new ArrayList<>();
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
-        public RVAdapter(ArrayList<MeetingRow> meetings)
-        {
-            this.meetings = meetings;
-        }
+                try {
 
-        @Override
-        public MeetingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            final View mVewCard = LayoutInflater.from(parent.getContext()).inflate(R.layout.meeting_row, parent, false);
-            MeetingViewHolder mMeetingViewHolder = new MeetingViewHolder(mVewCard);
+                    Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
+                    ArrayList<MeetingRow> listMeetings = new ArrayList<>();
 
-            return mMeetingViewHolder;
-        }
+                    for(int i=0; i<map.keySet().toArray().length; i++)
+                    {
+                        MeetingRow meeting = new MeetingRow();
+                        String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
+                        String title = map.get(map.keySet().toArray()[i].toString()).get("title");
+                        String key = map.get(map.keySet().toArray()[i].toString()).get("key");
 
-        @Override
-        public void onBindViewHolder(MeetingViewHolder holder, final int position) {
-            holder.mTitle.setText(meetings.get(position).getTitle());
-            holder.mDesc.setText(meetings.get(position).getDesc());
+                        meeting.setTitle(title);
+                        meeting.setDesc(desc);
+                        meeting.setKey(key);
+                        listMeetings.add(meeting);
+                    }
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    MeetingDescActivity.KEY = meetings.get(position).getKey();
+                    RVAdapter adapter = new RVAdapter(listMeetings, MeetingSearchActivity.this);
+                    mMeetingList.setAdapter(adapter);
 
-                    Intent intent= new Intent(MeetingSearchActivity.this, MeetingDescActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
                 }
-            });
+                catch (Exception e)
+                {
+                    Log.e("E_VALUE", e.getMessage());
+                }
 
-        }
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mButtonSearch.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
-        @Override
-        public int getItemCount() {
-            return meetings.size();
-        }
-
-        public  class MeetingViewHolder extends RecyclerView.ViewHolder {
-            TextView mTitle;
-            TextView mDesc;
-            MeetingViewHolder(View itemView) {
-                super(itemView);
-                mTitle = (TextView)itemView.findViewById(R.id.meeting_title);
-                mDesc = (TextView)itemView.findViewById(R.id.meeting_desc);
             }
-        }
-    }*/
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
