@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -19,8 +18,6 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.meetingroom.adapter.RVAdapter;
 
 import java.util.ArrayList;
@@ -32,7 +29,7 @@ public class MeetingListActivity extends AppCompatActivity
 
     private FirebaseAuth mAuth;
     private RecyclerView mMeetingList;
-    private DatabaseReference mDatabase;
+
 
     private Calendar date;
     private int mYear;
@@ -53,8 +50,6 @@ public class MeetingListActivity extends AppCompatActivity
         mMeetingList.setLayoutManager(new LinearLayoutManager(this));
 
 
-        mDatabase = FirebaseDatabase.getInstance().getReference().child("Meetings");
-
         date = Calendar.getInstance();
         mYear = date.get(Calendar.YEAR);
         mMonth = date.get(Calendar.MONTH);
@@ -73,6 +68,8 @@ public class MeetingListActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
     }
 
     @Override
@@ -83,8 +80,8 @@ public class MeetingListActivity extends AppCompatActivity
         mRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
 
+                try {
                     Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
                     ArrayList<MeetingRow> listMeetings = new ArrayList<>();
 
@@ -105,9 +102,10 @@ public class MeetingListActivity extends AppCompatActivity
 
                     RVAdapter adapter = new RVAdapter(listMeetings, MeetingListActivity.this);
                     mMeetingList.setAdapter(adapter);
+                }
+                catch (Exception e)
+                {
 
-                } catch (Exception e) {
-                    Log.e("E_VALUE", e.getMessage());
                 }
             }
 
@@ -117,6 +115,8 @@ public class MeetingListActivity extends AppCompatActivity
             }
         });
     }
+
+
 
 
     @Override

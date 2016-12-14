@@ -1,8 +1,14 @@
 package com.meetingroom;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +27,7 @@ public class MeetingAddActivity extends AppCompatActivity {
     private Button mAddMeeting;
     private Firebase mRef;
     private String key = "";
+    private NotificationCompat.Builder mBuilder;
 
     private EditText mEditTitle;
     private EditText mEditDesc;
@@ -95,7 +102,12 @@ public class MeetingAddActivity extends AppCompatActivity {
                     Firebase mChildRefKey = mChildRef.child("key");
                     mChildRefKey.setValue(key);
 
-                    startActivity(new Intent(MeetingAddActivity.this, MeetingListActivity.class));
+                    getNotification("Добавлена новая встреча!", mEditTitle.getText().toString());
+
+                    Intent intent= new Intent(MeetingAddActivity.this, MeetingListActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
                 }
                 catch (Exception e)
                 {
@@ -126,7 +138,7 @@ public class MeetingAddActivity extends AppCompatActivity {
     }
 
 
-    static boolean isValidDate(String value, String datePattern) {
+    private boolean isValidDate(String value, String datePattern) {
 
         //метод проверки правильнлсти ввода даты
         if (value == null || datePattern == null || datePattern.length() <= 0) {
@@ -144,7 +156,7 @@ public class MeetingAddActivity extends AppCompatActivity {
         return true;
     }
 
-    static boolean isValidTime(String value, String datePattern) {
+    private boolean isValidTime(String value, String datePattern) {
 
         //метод проверки правильнлсти ввода времени
         if (value == null || datePattern == null || datePattern.length() <= 0) {
@@ -160,5 +172,31 @@ public class MeetingAddActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    public  void getNotification(String title, String message)
+    {
+        mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setTicker(title)
+                        .setAutoCancel(true)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+        Intent resultIntent = new Intent(this, MeetingListActivity.class);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+
+        stackBuilder.addParentStack(MeetingListActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        mNotificationManager.notify(0, mBuilder.build());
+
     }
 }
