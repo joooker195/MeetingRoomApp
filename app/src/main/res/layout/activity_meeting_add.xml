@@ -9,6 +9,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.meetingroom.MeetingAddActivity">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scrollView3">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -81,16 +89,7 @@
         android:layout_below="@+id/time_end"
         android:layout_alignEnd="@+id/time_end" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="добавить"
-        android:id="@+id/add_button"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:onClick="onClickAdd"/>
-
-    <EditText
+        <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="date"
@@ -101,5 +100,19 @@
         android:layout_alignParentStart="true"
         android:paddingTop="10dp"
         android:paddingBottom="15dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="добавить"
+            android:id="@+id/add_button"
+            android:onClick="onClickAdd"
+            android:layout_alignBottom="@+id/scrollView3"
+            android:layout_alignParentStart="true" />
+
+    </LinearLayout>
+    </ScrollView>
+
+
 
 </RelativeLayout>

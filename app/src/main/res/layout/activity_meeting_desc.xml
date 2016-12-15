@@ -11,17 +11,9 @@
     android:layout_centerVertical="true"
     >
 
-
     <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView"
-        android:padding="1000dp"
-        android:fillViewport="false"
-        android:layout_alignParentBottom="false"
-        android:layout_alignParentEnd="false">
-
-    </ScrollView>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,9 +55,8 @@
 
         <ExpandableListView
             android:layout_width="match_parent"
-            android:layout_height="127dp"
-            android:id="@+id/desc_party"
-            android:layout_weight="1.01" />
+            android:layout_height="311dp"
+            android:id="@+id/desc_party" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -98,6 +89,7 @@
             android:id="@+id/add_party_button" />
 
     </LinearLayout>
+    </ScrollView>
 
 
 </RelativeLayout>
