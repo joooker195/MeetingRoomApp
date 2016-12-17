@@ -1,7 +1,11 @@
 package com.meetingroom;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,20 +16,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.meetingroom.adapter.RVAdapter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Map;
 
 public class MeetingListActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
     private FirebaseAuth mAuth;
     private RecyclerView mMeetingList;
@@ -38,6 +40,8 @@ public class MeetingListActivity extends AppCompatActivity
     private String mDate;
 
     private TextView dateText;
+
+    ArrayList<MeetingRow> m = new ArrayList<>();
 
 
     @Override
@@ -54,13 +58,21 @@ public class MeetingListActivity extends AppCompatActivity
         mYear = date.get(Calendar.YEAR);
         mMonth = date.get(Calendar.MONTH);
         mDay = date.get(Calendar.DAY_OF_MONTH);
-        dateText= (TextView) findViewById(R.id.date);
+        dateText = (TextView) findViewById(R.id.date);
         mDate = new StringBuilder()
                 .append(mDay).append(".")
-                .append(mMonth+1).append(".")
+                .append(mMonth + 1).append(".")
                 .append(mYear).toString();
 
         dateText.setText(mDate);
+
+        updateMeetingList();
+
+        MeetingBroadcastReceiver meetingBroadcast = new MeetingBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter(
+                MeetingListService.ACTION_MYINTENTSERVICE);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingBroadcast, intentFilter);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -72,14 +84,33 @@ public class MeetingListActivity extends AppCompatActivity
     }
 
     @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    public class MeetingBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("1")) {
+                m = (ArrayList<MeetingRow>) intent.getSerializableExtra(MeetingListService.MEETINGS);
+                RVAdapter adapter = new RVAdapter(m, MeetingListActivity.this);
+                mMeetingList.setAdapter(adapter);
+                Toast.makeText(MeetingListActivity.this, "Meetings update", Toast.LENGTH_LONG).show();
+            } else Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
+
+        }
+    }
+
+
+  /*  @Override
     protected void onStart() {
         super.onStart();
 
-        Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
+        Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings");
         mRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 try {
                     Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
                     ArrayList<MeetingRow> listMeetings = new ArrayList<>();
@@ -104,6 +135,7 @@ public class MeetingListActivity extends AppCompatActivity
                 }
                 catch (Exception e)
                 {
+                    Log.e("E_VALUE", e.getMessage());
 
                 }
             }
@@ -113,10 +145,7 @@ public class MeetingListActivity extends AppCompatActivity
 
             }
         });
-    }
-
-
-
+    }*/
 
     @Override
     public void onBackPressed() {
@@ -144,7 +173,8 @@ public class MeetingListActivity extends AppCompatActivity
         }
         if(id == R.id.action_update)
         {
-            return true;
+            updateMeetingList();
+            // return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -179,4 +209,11 @@ public class MeetingListActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    public void updateMeetingList()
+    {
+        Intent intent = new Intent(MeetingListActivity.this, MeetingListService.class);
+        startService(intent);
+    }
+
 }

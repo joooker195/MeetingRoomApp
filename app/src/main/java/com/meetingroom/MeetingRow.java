@@ -1,9 +1,11 @@
 package com.meetingroom;
 
+import java.io.Serializable;
+
 /**
  * Created by Ксю on 06.12.2016.
  */
-public class MeetingRow {
+public class MeetingRow implements Serializable {
 
     private String title;
     private String desc;

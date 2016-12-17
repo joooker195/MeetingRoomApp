@@ -30,6 +30,10 @@
             android:name=".SettingPreference"
             android:label="Settings" />
         <activity android:name=".MeetingSearchActivity"></activity>
+        <service
+            android:name=".MeetingListService"
+            android:exported="false">
+        </service>
 
     </application>
 

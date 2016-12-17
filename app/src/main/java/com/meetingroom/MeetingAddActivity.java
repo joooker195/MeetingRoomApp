@@ -5,15 +5,21 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
@@ -22,6 +28,7 @@ import com.meetingroom.variables.MainVariables;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class MeetingAddActivity extends AppCompatActivity {
 
@@ -37,6 +44,8 @@ public class MeetingAddActivity extends AppCompatActivity {
     private EditText mEditDateEnd;
     private EditText mEditTimeEnd;
     private EditText mEditPriority;
+    private DatePicker mDatePicker;
+    private TimePicker mTimePicker;
 
 
     @Override
@@ -53,9 +62,48 @@ public class MeetingAddActivity extends AppCompatActivity {
         mEditTimeEnd = (EditText) findViewById(R.id.time_end);
         mEditPriority = (EditText) findViewById(R.id.add_priority);
 
+
+         mEditDateBegin.setOnClickListener(new View.OnClickListener()
+         {
+             @Override
+             public void onClick(View view)
+             {
+                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                 imm.hideSoftInputFromWindow(mEditDateBegin.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                 onClickDatePicker(mEditDateBegin);
+             }
+
+         });
+
+        mEditDateEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mEditDateEnd.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                onClickDatePicker(mEditDateEnd);
+            }
+        });
+
+        mEditTimeBegin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mEditTimeBegin.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                onClickTimePicker(mEditTimeBegin);
+            }
+        });
+
+        mEditTimeEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mEditTimeEnd.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                onClickTimePicker(mEditTimeEnd);
+            }
+        });
+
         //получаем уникальный key отдельной встречи (реалиовано рандомом)
         key = MainVariables.getKey();
-
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
 
         mAddMeeting.setOnClickListener(new View.OnClickListener() {
@@ -209,5 +257,58 @@ public class MeetingAddActivity extends AppCompatActivity {
 
         mNotificationManager.notify(0, mBuilder.build());
 
+    }
+
+    private void onClickDatePicker(final EditText editDate)
+    {
+        final Calendar calendar = Calendar.getInstance();
+
+        LayoutInflater layoutInflater = LayoutInflater.from(MeetingAddActivity.this);
+        final View promptView = layoutInflater.inflate(R.layout.date_picker_activity, null);
+        mDatePicker = (DatePicker) promptView.findViewById(R.id.dp);
+        mDatePicker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MeetingAddActivity.this);
+        alertDialogBuilder.setTitle("Choose data");
+        alertDialogBuilder.setView(promptView);
+        alertDialogBuilder.setCancelable(false)
+                .setNegativeButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                editDate.setText(new StringBuilder()
+                                        .append(mDatePicker.getDayOfMonth()).append(".")
+                                        .append(mDatePicker.getMonth() + 1).append(".")
+                                        .append(mDatePicker.getYear()));
+                          //      summary = prefDate.getSummary();
+                          //      dpf = false;
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+    }
+
+    private void onClickTimePicker(final EditText editTime) {
+
+        final Calendar calendar = Calendar.getInstance();
+
+        LayoutInflater layoutInflater = LayoutInflater.from(MeetingAddActivity.this);
+        final View promptView = layoutInflater.inflate(R.layout.time_picker_activity, null);
+        mTimePicker = (TimePicker) promptView.findViewById(R.id.tp);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MeetingAddActivity.this);
+        alertDialogBuilder.setTitle("Choose data");
+        alertDialogBuilder.setView(promptView);
+        alertDialogBuilder.setCancelable(false)
+                .setNegativeButton("Ok",
+                        new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int id) {
+                                editTime.setText(new StringBuilder()
+                                        .append(mTimePicker.getCurrentHour()).append(":")
+                                        .append(mTimePicker.getCurrentMinute()));
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
     }
 }

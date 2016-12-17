@@ -40,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 
-
-        //если аутентификация прошла, заходим в программу и не выходим от туда
         mAuthListener = new FirebaseAuth.AuthStateListener() {
 
             @Override
