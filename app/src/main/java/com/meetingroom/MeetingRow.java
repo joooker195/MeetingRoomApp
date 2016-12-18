@@ -10,6 +10,35 @@ public class MeetingRow implements Serializable {
     private String title;
     private String desc;
     private String key;
+    private  String dateEnd;
+
+    public String getTimeEnd() {
+        return timeEnd;
+    }
+
+    public void setTimeEnd(String timeEnd) {
+        this.timeEnd = timeEnd;
+    }
+
+    private String timeEnd;
+
+    public String getTimeBegin() {
+        return timeBegin;
+    }
+
+    public void setTimeBegin(String timeBegin) {
+        this.timeBegin = timeBegin;
+    }
+
+    private String timeBegin;
+
+    public String getDateEnd() {
+        return dateEnd;
+    }
+
+    public void setDateEnd(String dateEnd) {
+        this.dateEnd = dateEnd;
+    }
 
     public String getDate() {
         return date;

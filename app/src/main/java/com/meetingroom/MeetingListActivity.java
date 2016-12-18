@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -18,8 +17,6 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.meetingroom.adapter.RVAdapter;
 
@@ -27,11 +24,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MeetingListActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     private FirebaseAuth mAuth;
     private RecyclerView mMeetingList;
-
 
     private Calendar date;
     private int mYear;
@@ -74,6 +70,15 @@ public class MeetingListActivity extends AppCompatActivity
         intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(meetingBroadcast, intentFilter);
 
+      /*  MeetingListBroadcastReceiver meetingListBroadcast = new MeetingListBroadcastReceiver();
+        IntentFilter intentFilterTime = new IntentFilter(
+                MeetingListService.ACTION_MYINTENTSERVICE);
+        intentFilterTime.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingListBroadcast, intentFilterTime);*/
+
+
+       // updateTimeMeetingList();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -83,10 +88,6 @@ public class MeetingListActivity extends AppCompatActivity
 
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 
     public class MeetingBroadcastReceiver extends BroadcastReceiver {
 
@@ -102,50 +103,19 @@ public class MeetingListActivity extends AppCompatActivity
         }
     }
 
+    public class MeetingListBroadcastReceiver extends BroadcastReceiver {
 
-  /*  @Override
-    protected void onStart() {
-        super.onStart();
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("1")) {
+                m = (ArrayList<MeetingRow>) intent.getSerializableExtra(MeetingListServiceTime.MEETINGS);
+                RVAdapter adapter = new RVAdapter(m, MeetingListActivity.this);
+                mMeetingList.setAdapter(adapter);
+                Toast.makeText(MeetingListActivity.this, "Meetings update", Toast.LENGTH_LONG).show();
+            } else Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
 
-        Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings");
-        mRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                    ArrayList<MeetingRow> listMeetings = new ArrayList<>();
-
-                    for (int i = 0; i < map.keySet().toArray().length; i++) {
-                        MeetingRow meeting = new MeetingRow();
-                        String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
-                        String title = map.get(map.keySet().toArray()[i].toString()).get("title");
-                        String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-                        String[] date = map.get(map.keySet().toArray()[i].toString()).get("begin").split(" ");
-                        if (date[0].equals(mDate)) {
-                            meeting.setTitle(title);
-                            meeting.setDesc(desc);
-                            meeting.setKey(key);
-                            meeting.setDate(date[0]);
-                            listMeetings.add(meeting);
-                        }
-                    }
-
-                    RVAdapter adapter = new RVAdapter(listMeetings, MeetingListActivity.this);
-                    mMeetingList.setAdapter(adapter);
-                }
-                catch (Exception e)
-                {
-                    Log.e("E_VALUE", e.getMessage());
-
-                }
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-    }*/
+        }
+    }
 
     @Override
     public void onBackPressed() {
@@ -213,6 +183,12 @@ public class MeetingListActivity extends AppCompatActivity
     public void updateMeetingList()
     {
         Intent intent = new Intent(MeetingListActivity.this, MeetingListService.class);
+        startService(intent);
+    }
+
+    public void updateTimeMeetingList()
+    {
+        Intent intent = new Intent(MeetingListActivity.this, MeetingListServiceTime.class);
         startService(intent);
     }
 

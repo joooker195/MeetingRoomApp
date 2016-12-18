@@ -1,23 +1,29 @@
 package com.meetingroom;
 
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
-import com.firebase.client.Firebase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.meetingroom.adapter.GoogleCalendar;
+import com.meetingroom.variables.MainVariables;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +32,13 @@ import java.util.Map;
  */
 public class MeetingListService extends IntentService
 {
-    Map<String, Map<String, String>> map = new HashMap<>();
+
     List<MeetingRow> listMeetings = new ArrayList<>();
+    ArrayList<String> listKeys = new ArrayList<>();
 
     MeetingListListener meetingListener;
-    private  Firebase mRef;
+
+    private NotificationCompat.Builder mBuilder;
 
     private Calendar date;
     private int mYear;
@@ -49,9 +57,15 @@ public class MeetingListService extends IntentService
                 .append(mYear).toString();
     }
 
+    boolean flag = false;
+
     public static final String ACTION_MYINTENTSERVICE = "com.meetingroom.RESPONSE";
     public static final String NETWORK = "NETWORK";
     public static final String MEETINGS = "MEETINGS";
+    public static final String NEWMEET = "NEWMEET";
+    public static final String FLAG = "FLAG";
+
+
 
     public MeetingListService() {
         super("MeetingListService");
@@ -67,8 +81,6 @@ public class MeetingListService extends IntentService
     @Override
     protected void onHandleIntent(Intent intent)
     {
-
-        mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/");
         Intent responseIntent = new Intent();
 
         ConnectivityManager connMan = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -77,7 +89,7 @@ public class MeetingListService extends IntentService
 
             DatabaseReference a = FirebaseDatabase.getInstance().getReference();
             meetingListener = new MeetingListListener(a);
-            a.child("Meetings").addValueEventListener(meetingListener);
+            a.addValueEventListener(meetingListener);
         }
         else {
             responseIntent.setAction(ACTION_MYINTENTSERVICE);
@@ -102,23 +114,63 @@ public class MeetingListService extends IntentService
         @Override
         public void onDataChange(DataSnapshot dataSnapshot)
         {
-            map = (Map<String, Map<String, String>>) dataSnapshot.getValue();
+            Map<String, Map<String, String>> mapMeetings = (Map<String, Map<String, String>>) dataSnapshot.child("Meetings").getValue();
+            Map<String, String> mapKeys = (Map<String, String>) dataSnapshot.child("Keys").getValue();
 
-            for (int i = 0; i < map.keySet().toArray().length; i++) {
+            for (int i = 0; i < mapMeetings.keySet().toArray().length; i++) {
                 MeetingRow meeting = new MeetingRow();
-                String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
-                String title = map.get(map.keySet().toArray()[i].toString()).get("title");
-                String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-                String[] date = map.get(map.keySet().toArray()[i].toString()).get("begin").split(" ");
+                String desc = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("desc");
+                String title = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("title");
+                String key = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("key");
+                String[] date = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("begin").split(" ");
+                String[] dateEnd = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("end").split(" ");
                 if (date[0].equals(mDate)) {
                     meeting.setTitle(title);
                     meeting.setDesc(desc);
                     meeting.setKey(key);
                     meeting.setDate(date[0]);
+                    meeting.setTimeBegin(date[1]);
+                    meeting.setDateEnd(dateEnd[0]);
+                    meeting.setTimeEnd(dateEnd[1]);
                     listMeetings.add(meeting);
                 }
             }
-            mRef.child("Meetings").removeEventListener(this);
+            for(int i=0; i< mapKeys.keySet().toArray().length; i++)
+            {
+                listKeys.add(i, mapKeys.get(mapKeys.keySet().toArray()[i]));
+            }
+            if(mapKeys.size()<mapMeetings.size())
+            {
+                flag = true;
+                for (int i=0; i<listMeetings.size(); i++)
+                {
+                    boolean f = false;
+                    MeetingRow meeting = listMeetings.get(i);
+                    for(int j=0; j<listKeys.size(); j++)
+                    {
+                        if(listMeetings.get(i).getKey().equals(listKeys.get(j)))
+                        {
+                            f = true;
+                            break;
+                        }
+                    }
+                    if(!f)
+                    {
+                        Context context = getApplicationContext();
+                        try {
+                            GoogleCalendar.init(context, meeting.getDate(), meeting.getTimeBegin(), meeting.getDateEnd(),
+                                    meeting.getTimeEnd(),meeting.getTitle(), meeting.getDesc());
+                            getNotification(meeting.getTitle());
+                            mapKeys.put("k_"+ MainVariables.getKey(), meeting.getKey());
+                            mRef.child("Keys").setValue(mapKeys);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            mRef.removeEventListener(this);
 
             Intent responseIntent = new Intent();
             responseIntent.setAction(ACTION_MYINTENTSERVICE);
@@ -136,5 +188,34 @@ public class MeetingListService extends IntentService
 
         }
     }
+
+    public  void getNotification(String title)
+    {
+        Context context = getApplicationContext();
+        mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle("Добавлена новая встреча!")
+                        .setContentText(title)
+                        .setTicker("Meeting Room!")
+                        .setAutoCancel(true)
+                        .setDefaults(Notification.DEFAULT_ALL);
+
+        Intent resultIntent = new Intent(context, MeetingListActivity.class);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+
+        stackBuilder.addParentStack(MeetingListActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        mNotificationManager.notify(0, mBuilder.build());
+
+    }
+
+
 
 }
