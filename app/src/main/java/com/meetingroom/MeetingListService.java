@@ -33,6 +33,9 @@ import java.util.Map;
 public class MeetingListService extends IntentService
 {
 
+    Map<String, Map<String, String>> mapMeetings;
+    Map<String, String> mapKeys;
+
     List<MeetingRow> listMeetings = new ArrayList<>();
     ArrayList<String> listKeys = new ArrayList<>();
 
@@ -56,8 +59,6 @@ public class MeetingListService extends IntentService
                 .append(mMonth+1).append(".")
                 .append(mYear).toString();
     }
-
-    boolean flag = false;
 
     public static final String ACTION_MYINTENTSERVICE = "com.meetingroom.RESPONSE";
     public static final String NETWORK = "NETWORK";
@@ -114,8 +115,8 @@ public class MeetingListService extends IntentService
         @Override
         public void onDataChange(DataSnapshot dataSnapshot)
         {
-            Map<String, Map<String, String>> mapMeetings = (Map<String, Map<String, String>>) dataSnapshot.child("Meetings").getValue();
-            Map<String, String> mapKeys = (Map<String, String>) dataSnapshot.child("Keys").getValue();
+            mapMeetings = (Map<String, Map<String, String>>) dataSnapshot.child("Meetings").getValue();
+            mapKeys = (Map<String, String>) dataSnapshot.child("Keys").getValue();
 
             for (int i = 0; i < mapMeetings.keySet().toArray().length; i++) {
                 MeetingRow meeting = new MeetingRow();
@@ -135,40 +136,13 @@ public class MeetingListService extends IntentService
                     listMeetings.add(meeting);
                 }
             }
-            for(int i=0; i< mapKeys.keySet().toArray().length; i++)
+
+            for (int i = 0; i < mapKeys.keySet().toArray().length; i++)
             {
                 listKeys.add(i, mapKeys.get(mapKeys.keySet().toArray()[i]));
             }
-            if(mapKeys.size()<mapMeetings.size())
-            {
-                flag = true;
-                for (int i=0; i<listMeetings.size(); i++)
-                {
-                    boolean f = false;
-                    MeetingRow meeting = listMeetings.get(i);
-                    for(int j=0; j<listKeys.size(); j++)
-                    {
-                        if(listMeetings.get(i).getKey().equals(listKeys.get(j)))
-                        {
-                            f = true;
-                            break;
-                        }
-                    }
-                    if(!f)
-                    {
-                        Context context = getApplicationContext();
-                        try {
-                            GoogleCalendar.init(context, meeting.getDate(), meeting.getTimeBegin(), meeting.getDateEnd(),
-                                    meeting.getTimeEnd(),meeting.getTitle(), meeting.getDesc());
-                            getNotification(meeting.getTitle());
-                            mapKeys.put("k_"+ MainVariables.getKey(), meeting.getKey());
-                            mRef.child("Keys").setValue(mapKeys);
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+
+            ifNewMeeting(mRef);
 
             mRef.removeEventListener(this);
 
@@ -214,6 +188,47 @@ public class MeetingListService extends IntentService
 
         mNotificationManager.notify(0, mBuilder.build());
 
+    }
+
+    //кроме Meetings есть еще один ключ Keys, в котором содержатся ключи существующих встреч.
+    //если встреча только что добавлена, то в списке ключей ее еще нет.
+    //сравниваем список ключей, со списком встреч, и если есть не совпадение, то отсылаем уведамление и добавляем ключ в список.
+    public void ifNewMeeting(DatabaseReference mRef) {
+
+        if (mapKeys.size() < mapMeetings.size())
+        {
+            for (int i = 0; i < listMeetings.size(); i++)
+            {
+                boolean f = false;
+                MeetingRow meeting = listMeetings.get(i);
+
+                for (int j = 0; j < listKeys.size(); j++) {
+
+                    if (listMeetings.get(i).getKey().equals(listKeys.get(j)))
+                    {
+                        f = true;
+                        break;
+                    }
+                }
+
+                if (!f) {
+                    Context context = getApplicationContext();
+                    try {
+                        GoogleCalendar.init(context, meeting.getDate(), meeting.getTimeBegin(), meeting.getDateEnd(),
+                                meeting.getTimeEnd(), meeting.getTitle(), meeting.getDesc());
+                        getNotification(meeting.getTitle());
+
+                        mapKeys.put("k_" + MainVariables.getKey(), meeting.getKey());
+                        mRef.child("Keys").setValue(mapKeys);
+                    }
+                    catch (ParseException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
     }
 
 
