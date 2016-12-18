@@ -63,10 +63,6 @@ public class MeetingListService extends IntentService
     public static final String ACTION_MYINTENTSERVICE = "com.meetingroom.RESPONSE";
     public static final String NETWORK = "NETWORK";
     public static final String MEETINGS = "MEETINGS";
-    public static final String NEWMEET = "NEWMEET";
-    public static final String FLAG = "FLAG";
-
-
 
     public MeetingListService() {
         super("MeetingListService");
