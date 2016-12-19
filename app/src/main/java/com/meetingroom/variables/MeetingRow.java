@@ -1,4 +1,4 @@
-package com.meetingroom;
+package com.meetingroom.variables;
 
 import java.io.Serializable;
 
@@ -11,6 +11,18 @@ public class MeetingRow implements Serializable {
     private String desc;
     private String key;
     private  String dateEnd;
+    private String timeEnd;
+    private String timeBegin;
+    private String date;
+    private String priority;
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
 
     public String getTimeEnd() {
         return timeEnd;
@@ -20,7 +32,7 @@ public class MeetingRow implements Serializable {
         this.timeEnd = timeEnd;
     }
 
-    private String timeEnd;
+
 
     public String getTimeBegin() {
         return timeBegin;
@@ -30,7 +42,7 @@ public class MeetingRow implements Serializable {
         this.timeBegin = timeBegin;
     }
 
-    private String timeBegin;
+
 
     public String getDateEnd() {
         return dateEnd;
@@ -48,10 +60,9 @@ public class MeetingRow implements Serializable {
         this.date = date;
     }
 
-    private String date;
+
 
     public String getKey() {
-        //Класс для создания cardview
 
         return key;
     }

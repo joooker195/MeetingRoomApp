@@ -1,6 +1,9 @@
 package com.meetingroom;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -10,12 +13,12 @@ import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 import com.meetingroom.variables.MainVariables;
+import com.meetingroom.variables.MeetingPartys;
+import com.meetingroom.variables.MeetingRow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +29,8 @@ public class MeetingDescActivity extends AppCompatActivity {
 
     private Firebase mRef;
     private Firebase mRefListPartys;
+    private MeetingRow m = new MeetingRow();
+    private ArrayList<MeetingPartys> mPat = new ArrayList<>();
 
     public static String KEY = "";
 
@@ -58,53 +63,55 @@ public class MeetingDescActivity extends AppCompatActivity {
         mTextPartys = (TextView) findViewById(R.id.text_partys);
         mAddPartyButton = (Button) findViewById(R.id.add_party_button);
 
-        //список встреч
-        mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
-        mRef.addValueEventListener(new ValueEventListener() {
+        meetingDesc();
 
+        MeetingDescBroadcastReceiver meetingBroadcast = new MeetingDescBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter(
+                MeetingDescService.ACTION_MYINTENTSERVICE);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingBroadcast, intentFilter);
+
+
+
+        mAddPartyButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onClick(View view) {
 
-                //метод для получения список встреч в реальном времени
-                try {
-                    //получаем мапу, и по ключу(тому самому, что в при вызове интента мы получили через одно место), находим
-                    // нужный нам список)
-                    Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                    mTitle.setText(map.get("n_" + KEY).get("title").toString());
-                    mDesc.setText(map.get("n_" + KEY).get("desc").toString());
-                    mBegin.setText("Начало: " + map.get("n_" + KEY).get("begin").toString());
-                    mEnd.setText("Конец: " + map.get("n_" + KEY).get("end").toString());
-                    mPriority.setText("Приоритет: " + map.get("n_" + KEY).get("priority").toString());
-
-                }
-                catch (Exception e)
-                {
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+                //добавляем участника
+                Firebase mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("name");
+                mChildRefPartys.setValue(MainVariables.getLogin());
+                mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("prof");
+                mChildRefPartys.setValue(MainVariables.getProf());
+                mAddPartyButton.setVisibility(Button.INVISIBLE);
 
             }
 
         });
+    }
 
-        //список участников(отдельно, так как это подсписок)
-        mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY + "/partys");
-        mRefListPartys.addValueEventListener(new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    mTextPartys.setText("Участники:");
 
-                    list = dataSnapshot.getValue(Map.class);
+    public class MeetingDescBroadcastReceiver extends BroadcastReceiver {
 
-                    for(int i=0; i<list.size(); i++)
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("1")) {
+                m = (MeetingRow) intent.getSerializableExtra(MeetingDescService.MEETING);
+                mTitle.setText(m.getTitle());
+                mDesc.setText(m.getDesc());
+                mBegin.setText("Начало: " + m.getDate());
+                mEnd.setText("Конец: " + m.getDateEnd());
+                mPriority.setText("Приоритет: " + m.getPriority());
+
+                mPat = (ArrayList<MeetingPartys>) intent.getSerializableExtra(MeetingDescService.PARTYS);
+                if(mPat.size()==0)
+                {
+                    mTextPartys.setText("Участники: \nВ списке пока нет участников");
+                }
+                else
+                {
+                    for(int i=0; i<mPat.size(); i++)
                     {//проверка на участие во встече, если участвуешь, убирается кнопка
-                        String a = dataSnapshot.child("p_"+i).child("name").getValue(String.class);
+                        String a = mPat.get(i).getName();
                         //MainVariables связана с настройками,где мы указываем свое имя и должность
                         if(a.equals(MainVariables.getLogin()))
                         {
@@ -112,9 +119,6 @@ public class MeetingDescActivity extends AppCompatActivity {
                         }
                     }
 
-
-                    //вся ахинея, что написана ниже, нужна для отображения списка, так как я использовала ExpandableListView,
-                    //чтобы выводился участник, и при разворачивании его подсписка отображалась его должность
                     Map<String, String> mapDataList;
                     Map<String, String> mapChildDataList;
 
@@ -122,18 +126,18 @@ public class MeetingDescActivity extends AppCompatActivity {
                     ArrayList<ArrayList<Map<String, String>>> childDataList = new ArrayList<>();
                     ArrayList<Map<String, String>> childDataItemList;
 
-                    for (int i = 0; i < list.size(); i++) {
+                    for (int i = 0; i < mPat.size(); i++) {
                         //так как мы не удаляем участников, id можно вести по порядку
                         //здесь получаем мапу, и дальше создаем адаптер
-                        Map<String, String> childList = list.get("p_" + i);
+                    //    Map<String, String> childList = mPat.get(i);
                         mapDataList = new HashMap<>();
-                        mapDataList.put("number", String.valueOf(i + 1) + ") " + childList.get("name"));
+                        mapDataList.put("number", String.valueOf(i + 1) + ") " + mPat.get(i).getName());
 
                         groupDataList.add(mapDataList);
 
                         mapChildDataList = new HashMap<>();
                         childDataItemList = new ArrayList<>();
-                        mapChildDataList.put("desc", "Должность: " + childList.get("prof"));
+                        mapChildDataList.put("desc", "Должность: " + mPat.get(i).getProf());
                         childDataItemList.add(mapChildDataList);
 
                         childDataList.add(childDataItemList);
@@ -153,41 +157,13 @@ public class MeetingDescActivity extends AppCompatActivity {
                             childFrom, childTo);
 
                     mPartys.setAdapter(adapter);
+
+
                 }
 
-                catch (Exception e)
-                {
-                    //если списка с участниками нет, то падает ошибка, что не находтся ключ partys.
-                    //обработала ее и вывела сообщение
-                    mTextPartys.setText("Участники: \nВ списке пока нет участников");
-                    //без инициализации, которая вот тут происходит, почему то падает NPE (не знаю почему)
-                    list = new HashMap<>();
-                }
+            } else Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
 
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-
-
-
-        mAddPartyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //добавляем участника
-                Firebase mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("name");
-                mChildRefPartys.setValue(MainVariables.getLogin());
-                mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("prof");
-                mChildRefPartys.setValue(MainVariables.getProf());
-                mAddPartyButton.setVisibility(Button.INVISIBLE);
-
-            }
-
-        });
+        }
     }
 
     @Override
@@ -230,5 +206,12 @@ public class MeetingDescActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    public void meetingDesc()
+    {
+        Intent intent = new Intent(MeetingDescActivity.this, MeetingDescService.class);
+        intent.putExtra(MeetingDescService.KEY, KEY);
+        startService(intent);
     }
 }

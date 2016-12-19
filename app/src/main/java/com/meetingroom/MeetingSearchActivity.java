@@ -19,6 +19,7 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.meetingroom.adapter.RVAdapter;
+import com.meetingroom.variables.MeetingRow;
 
 import java.util.ArrayList;
 import java.util.Map;

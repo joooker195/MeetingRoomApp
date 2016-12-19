@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.meetingroom.MeetingDescActivity;
-import com.meetingroom.MeetingRow;
+import com.meetingroom.variables.MeetingRow;
 import com.meetingroom.R;
 
 import java.util.ArrayList;

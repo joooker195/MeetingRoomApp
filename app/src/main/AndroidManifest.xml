@@ -34,6 +34,10 @@
             android:name=".MeetingListService"
             android:exported="false">
         </service>
+        <service
+            android:name=".MeetingDescService"
+            android:exported="false">
+        </service>
 
     </application>
 

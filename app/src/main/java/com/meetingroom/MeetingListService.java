@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.meetingroom.adapter.GoogleCalendar;
 import com.meetingroom.variables.MainVariables;
+import com.meetingroom.variables.MeetingRow;
 
 import java.io.Serializable;
 import java.text.ParseException;
