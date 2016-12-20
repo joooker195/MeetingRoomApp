@@ -2,12 +2,14 @@ package com.meetingroom;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +30,8 @@ import java.util.Calendar;
 
 public class MeetingListActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    String info = "Лабораторная работа #2"+"\n"+"Автор: Сараева Ксения"+"\n"+"Группа: 6122";
 
     private FirebaseAuth mAuth;
     private RecyclerView mMeetingList;
@@ -100,7 +104,7 @@ public class MeetingListActivity extends AppCompatActivity
                 m = (ArrayList<MeetingRow>) intent.getSerializableExtra(MeetingListService.MEETINGS);
                 RVAdapter adapter = new RVAdapter(m, MeetingListActivity.this);
                 mMeetingList.setAdapter(adapter);
-                Toast.makeText(MeetingListActivity.this, "Meetings update", Toast.LENGTH_LONG).show();
+                Toast.makeText(MeetingListActivity.this, "Список обновлен", Toast.LENGTH_LONG).show();
             } else Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
 
         }
@@ -137,17 +141,28 @@ public class MeetingListActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
+    public boolean onOptionsItemSelected(MenuItem item
+    ) {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            return true;
+          AlertDialog.Builder builder = new AlertDialog.Builder(MeetingListActivity.this);
+            builder.setMessage(info)
+                    .setTitle("О программе")
+                    .setCancelable(false)
+                    .setNegativeButton("Ok",
+                            new DialogInterface.OnClickListener()
+                            {
+                                public void onClick(DialogInterface dialog, int id)
+                                {
+                                    dialog.cancel();
+                                }
+                            });
+            builder.show();
         }
         if(id == R.id.action_update)
         {
             updateMeetingList();
-            // return true;
         }
 
         return super.onOptionsItemSelected(item);

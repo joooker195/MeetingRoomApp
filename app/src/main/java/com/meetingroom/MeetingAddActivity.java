@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.NotificationCompat;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,7 +20,6 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.firebase.client.Firebase;
 import com.meetingroom.services.MeetingAddService;
 
 import java.text.ParseException;
@@ -31,9 +29,6 @@ import java.util.Calendar;
 public class MeetingAddActivity extends AppCompatActivity {
 
     private Button mAddMeetingButton;
-    private Firebase mRef;
-    private String key = "";
-    private NotificationCompat.Builder mBuilder;
 
     private EditText mEditTitle;
     private EditText mEditDesc;
@@ -243,7 +238,7 @@ public class MeetingAddActivity extends AppCompatActivity {
         mDatePicker = (DatePicker) promptView.findViewById(R.id.dp);
         mDatePicker.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), null);
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MeetingAddActivity.this);
-        alertDialogBuilder.setTitle("Choose data");
+        alertDialogBuilder.setTitle("Выберите дату");
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false)
                 .setNegativeButton("Ok",
@@ -253,8 +248,7 @@ public class MeetingAddActivity extends AppCompatActivity {
                                         .append(mDatePicker.getDayOfMonth()).append(".")
                                         .append(mDatePicker.getMonth() + 1).append(".")
                                         .append(mDatePicker.getYear()));
-                          //      summary = prefDate.getSummary();
-                          //      dpf = false;
+
                                 dialog.cancel();
                             }
                         });
@@ -264,13 +258,11 @@ public class MeetingAddActivity extends AppCompatActivity {
 
     private void onClickTimePicker(final EditText editTime) {
 
-        final Calendar calendar = Calendar.getInstance();
-
         LayoutInflater layoutInflater = LayoutInflater.from(MeetingAddActivity.this);
         final View promptView = layoutInflater.inflate(R.layout.time_picker_activity, null);
         mTimePicker = (TimePicker) promptView.findViewById(R.id.tp);
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MeetingAddActivity.this);
-        alertDialogBuilder.setTitle("Choose data");
+        alertDialogBuilder.setTitle("Выберите время");
         alertDialogBuilder.setView(promptView);
         alertDialogBuilder.setCancelable(false)
                 .setNegativeButton("Ok",
