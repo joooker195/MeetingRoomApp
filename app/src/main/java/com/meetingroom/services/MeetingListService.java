@@ -1,4 +1,4 @@
-package com.meetingroom;
+package com.meetingroom.services;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -17,6 +17,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.meetingroom.MeetingListActivity;
+import com.meetingroom.R;
 import com.meetingroom.adapter.GoogleCalendar;
 import com.meetingroom.variables.MainVariables;
 import com.meetingroom.variables.MeetingRow;

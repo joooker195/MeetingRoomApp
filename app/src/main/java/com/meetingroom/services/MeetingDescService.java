@@ -1,4 +1,4 @@
-package com.meetingroom;
+package com.meetingroom.services;
 
 import android.app.IntentService;
 import android.content.Context;

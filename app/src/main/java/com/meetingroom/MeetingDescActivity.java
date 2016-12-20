@@ -16,6 +16,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
+import com.meetingroom.services.MeetingDelService;
+import com.meetingroom.services.MeetingDescService;
+import com.meetingroom.services.MeetingPartyService;
 import com.meetingroom.variables.MainVariables;
 import com.meetingroom.variables.MeetingPartys;
 import com.meetingroom.variables.MeetingRow;
@@ -26,8 +29,6 @@ import java.util.Map;
 
 public class MeetingDescActivity extends AppCompatActivity {
 
-
-    private Firebase mRef;
     private Firebase mRefListPartys;
     private MeetingRow m = new MeetingRow();
     private ArrayList<MeetingPartys> mPat = new ArrayList<>();
@@ -43,8 +44,6 @@ public class MeetingDescActivity extends AppCompatActivity {
     private TextView mTextPartys;
 
     private Button mAddPartyButton;
-
-    private Map<String, Map<String, String>> list  = new HashMap<>();
 
     //жесть, 4 метода занимают 230 строк...
 
@@ -77,6 +76,12 @@ public class MeetingDescActivity extends AppCompatActivity {
         intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(meetingPBroadcast, intentPFilter);
 
+        MeetingDelBroadcastReceiver meetingDBroadcast = new MeetingDelBroadcastReceiver();
+        IntentFilter intentDFilter = new IntentFilter(
+                MeetingDescService.ACTION_MYINTENTSERVICE);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingDBroadcast, intentDFilter);
+
 
 
         mAddPartyButton.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +91,7 @@ public class MeetingDescActivity extends AppCompatActivity {
                 //добавляем участника
                 addPartys();
                 mAddPartyButton.setVisibility(Button.INVISIBLE);
-                //meetingDesc();
+                meetingDesc();
 
             }
 
@@ -179,6 +184,15 @@ public class MeetingDescActivity extends AppCompatActivity {
         }
     }
 
+    public class MeetingDelBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("0"))
+                Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.desc_menu, menu);
@@ -209,15 +223,9 @@ public class MeetingDescActivity extends AppCompatActivity {
 
     public void delMeeting()
     {
-        try {
-
-            mRefListPartys = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_" + KEY);
-            mRefListPartys.removeValue();
-        }
-        catch (Exception e)
-        {
-
-        }
+        Intent intent = new Intent(MeetingDescActivity.this, MeetingDelService.class);
+        intent.putExtra(MeetingDelService.KEY, KEY);
+        startService(intent);
 
     }
 

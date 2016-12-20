@@ -31,15 +31,19 @@
             android:label="Settings" />
         <activity android:name=".MeetingSearchActivity"></activity>
         <service
-            android:name=".MeetingListService"
+            android:name=".services.MeetingListService"
             android:exported="false">
         </service>
         <service
-            android:name=".MeetingDescService"
+            android:name=".services.MeetingDescService"
             android:exported="false">
         </service>
         <service
-            android:name=".MeetingPartyService"
+            android:name=".services.MeetingPartyService"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".services.MeetingDelService"
             android:exported="false">
         </service>
 

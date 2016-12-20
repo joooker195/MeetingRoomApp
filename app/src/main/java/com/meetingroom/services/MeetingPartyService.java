@@ -1,4 +1,4 @@
-package com.meetingroom;
+package com.meetingroom.services;
 
 import android.app.IntentService;
 import android.content.Context;
@@ -45,13 +45,6 @@ public class MeetingPartyService extends IntentService {
 
             String newKey = MainVariables.getKey();
 
-           /* DatabaseReference partysName = FirebaseDatabase.getInstance().getReference().child("Meetings")
-                    .child("n_"+key).child("partys").child("p_"+ newKey).child("name");
-            partysName.push().setValue(name);
-            DatabaseReference partysProf = FirebaseDatabase.getInstance().getReference().child("Meetings")
-                    .child("n_"+key).child("partys").child("p_"+ newKey).child("prof");
-            partysProf.setValue(prof);
-            partysProf.push();*/
             Firebase f = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/n_"+key+"/partys/p_"+newKey);
             f.child("name").setValue(name);
             f.child("prof").setValue(prof);
