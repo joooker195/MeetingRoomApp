@@ -99,13 +99,13 @@ public class MeetingDescService extends IntentService {
             meeting.setPriority(priority);
 
 
-            if(dataSnapshot.child("Meetings").child("n_"+key).child("partys") != null)
+            if(dataSnapshot.child("Meetings").child("n_"+key).child("partys").getValue() != null)
             {
                 mapPartys = (Map<String, Map<String, String>>) dataSnapshot.child("Meetings").child("n_"+key).child("partys").getValue();
-                MeetingPartys party = new MeetingPartys();
                 for(int i=0; i< mapPartys.size(); i++) {
-                    party.setName(mapPartys.get("p_"+i).get("name"));
-                    party.setProf(mapPartys.get("p_" + i).get("prof"));
+                    MeetingPartys party = new MeetingPartys();
+                    party.setName(mapPartys.get(mapPartys.keySet().toArray()[i]).get("name"));
+                    party.setProf(mapPartys.get(mapPartys.keySet().toArray()[i]).get("prof"));
                     listPartys.add(party);
                 }
             }

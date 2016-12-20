@@ -38,6 +38,10 @@
             android:name=".MeetingDescService"
             android:exported="false">
         </service>
+        <service
+            android:name=".MeetingPartyService"
+            android:exported="false">
+        </service>
 
     </application>
 

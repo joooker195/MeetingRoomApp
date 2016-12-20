@@ -71,6 +71,12 @@ public class MeetingDescActivity extends AppCompatActivity {
         intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(meetingBroadcast, intentFilter);
 
+        MeetingPartysBroadcastReceiver meetingPBroadcast = new MeetingPartysBroadcastReceiver();
+        IntentFilter intentPFilter = new IntentFilter(
+                MeetingDescService.ACTION_MYINTENTSERVICE);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingPBroadcast, intentPFilter);
+
 
 
         mAddPartyButton.setOnClickListener(new View.OnClickListener() {
@@ -78,11 +84,9 @@ public class MeetingDescActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 //добавляем участника
-                Firebase mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("name");
-                mChildRefPartys.setValue(MainVariables.getLogin());
-                mChildRefPartys = mRefListPartys.child("p_" + list.size()).child("prof");
-                mChildRefPartys.setValue(MainVariables.getProf());
+                addPartys();
                 mAddPartyButton.setVisibility(Button.INVISIBLE);
+                //meetingDesc();
 
             }
 
@@ -166,6 +170,15 @@ public class MeetingDescActivity extends AppCompatActivity {
         }
     }
 
+    public class MeetingPartysBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("0"))
+             Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.desc_menu, menu);
@@ -212,6 +225,15 @@ public class MeetingDescActivity extends AppCompatActivity {
     {
         Intent intent = new Intent(MeetingDescActivity.this, MeetingDescService.class);
         intent.putExtra(MeetingDescService.KEY, KEY);
+        startService(intent);
+    }
+
+    public void addPartys()
+    {
+        Intent intent = new Intent(MeetingDescActivity.this, MeetingPartyService.class);
+        intent.putExtra(MeetingPartyService.KEY, KEY);
+        intent.putExtra(MeetingPartyService.NAME, MainVariables.getLogin());
+        intent.putExtra(MeetingPartyService.PROF, MainVariables.getProf());
         startService(intent);
     }
 }
