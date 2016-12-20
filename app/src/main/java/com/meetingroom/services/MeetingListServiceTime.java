@@ -1,24 +1,31 @@
 package com.meetingroom.services;
 
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
-import com.firebase.client.Firebase;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.meetingroom.MeetingListActivity;
+import com.meetingroom.R;
+import com.meetingroom.adapter.GoogleCalendar;
 import com.meetingroom.variables.MeetingRow;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,11 +35,15 @@ import java.util.Map;
 public class MeetingListServiceTime extends IntentService
 {
 
-    Map<String, Map<String, String>> map = new HashMap<>();
-    List<MeetingRow> listMeetings = new ArrayList<>();
+    Map<String, Map<String, String>> mapMeetings;
+    Map<String, String> mapKeys;
 
-    MeetingListListener meetingListener;
-    private  Firebase mRef;
+    List<MeetingRow> listMeetings = new ArrayList<>();
+    ArrayList<String> listKeys = new ArrayList<>();
+
+    MeetingListListenerTime meetingListener;
+    private NotificationCompat.Builder mBuilder;
+
 
     private Calendar date;
     private int mYear;
@@ -62,88 +73,169 @@ public class MeetingListServiceTime extends IntentService
     @Override
     protected void onHandleIntent(Intent intent)
     {
-        mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/");
-        Intent responseIntent = new Intent();
+            Intent responseIntent = new Intent();
 
-        ConnectivityManager connMan = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo ni = connMan.getActiveNetworkInfo();
-        if(ni!=null&&ni.isConnected()) {
+            ConnectivityManager connMan = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo ni = connMan.getActiveNetworkInfo();
+            if(ni!=null&&ni.isConnected()) {
+                try
+                {
+                    while (true) {
 
-            DatabaseReference a = FirebaseDatabase.getInstance().getReference();
-            meetingListener = new MeetingListListener(a);
-            a.child("Meetings").addValueEventListener(meetingListener);
-            while(true){
-                try {
-                    Thread.sleep(60000);
-                    sendIntent();
-                } catch (InterruptedException e) {
+                        Thread.sleep(600000);
+                        listMeetings = new ArrayList<>();
+                        listKeys = new ArrayList<>();
+                        DatabaseReference a = FirebaseDatabase.getInstance().getReference();
+                        meetingListener = new MeetingListListenerTime(a);
+                        a.addValueEventListener(meetingListener);
+                    }
+                }
+                catch(InterruptedException e){
                     e.printStackTrace();
                 }
+
+            }
+            else {
+                responseIntent.setAction(ACTION_MYINTENTSERVICE);
+                responseIntent.addCategory(Intent.CATEGORY_DEFAULT);
+                responseIntent.putExtra(NETWORK,"0");
+                responseIntent.putExtra(MEETINGS, (Serializable) listMeetings);
+                sendBroadcast(responseIntent);
+                stopSelf();
+            }
+
+        }
+
+        public class MeetingListListenerTime implements ValueEventListener
+        {
+            private DatabaseReference mRef;
+
+            public MeetingListListenerTime(DatabaseReference ref)
+            {
+                this.mRef = ref;
+            }
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                mapMeetings = (Map<String, Map<String, String>>) dataSnapshot.child("Meetings").getValue();
+                mapKeys = (Map<String, String>) dataSnapshot.child("Keys").getValue();
+
+                try {
+                    for (int i = 0; i < mapMeetings.keySet().toArray().length; i++) {
+                        MeetingRow meeting = new MeetingRow();
+                        String desc = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("desc");
+                        String title = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("title");
+                        String key = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("key");
+                        String[] date = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("begin").split(" ");
+                        String[] dateEnd = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("end").split(" ");
+                        if (date[0].equals(mDate)) {
+                            meeting.setTitle(title);
+                            meeting.setDesc(desc);
+                            meeting.setKey(key);
+                            meeting.setDate(date[0]);
+                            meeting.setTimeBegin(date[1]);
+                            meeting.setDateEnd(dateEnd[0]);
+                            meeting.setTimeEnd(dateEnd[1]);
+                            listMeetings.add(meeting);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.e("UpdateMeeting_E", e.getMessage());
+                }
+
+                for (int i = 0; i < mapKeys.keySet().toArray().length; i++)
+                {
+                    listKeys.add(i, mapKeys.get(mapKeys.keySet().toArray()[i]));
+                }
+
+                ifNewMeeting(mRef);
+
+                mRef.removeEventListener(this);
+
+                Intent responseIntent = new Intent();
+                responseIntent.setAction(ACTION_MYINTENTSERVICE);
+                responseIntent.addCategory(Intent.CATEGORY_DEFAULT);
+                responseIntent.putExtra(NETWORK, "1");
+                responseIntent.putExtra(MEETINGS, (Serializable) listMeetings);
+                sendBroadcast(responseIntent);
+                stopSelf();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError)
+            {
+                Log.e("MLSError:", databaseError.getMessage());
+
             }
         }
-        else {
-            responseIntent.setAction(ACTION_MYINTENTSERVICE);
-            responseIntent.addCategory(Intent.CATEGORY_DEFAULT);
-            responseIntent.putExtra(NETWORK,"0");
-            responseIntent.putExtra(MEETINGS, (Serializable) listMeetings);
-            sendBroadcast(responseIntent);
-            stopSelf();
-        }
-    }
 
-    public void sendIntent(){
-        Intent responseIntent = new Intent();
-        responseIntent.setAction(ACTION_MYINTENTSERVICE);
-        responseIntent.addCategory(Intent.CATEGORY_DEFAULT);
-        responseIntent.putExtra(MEETINGS, (Serializable) listMeetings);
-        responseIntent.putExtra(NETWORK,"1");
-        sendBroadcast(responseIntent);
-    }
-
-
-    public class MeetingListListener implements ValueEventListener
+    public  void getNotification(String title)
     {
-        private DatabaseReference mRef;
+        Context context = getApplicationContext();
+        mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle("Добавлена новая встреча!")
+                        .setContentText(title)
+                        .setTicker("Meeting Room!")
+                        .setAutoCancel(true)
+                        .setDefaults(Notification.DEFAULT_ALL);
 
-        public MeetingListListener(DatabaseReference ref)
+        Intent resultIntent = new Intent(context, MeetingListActivity.class);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+
+        stackBuilder.addParentStack(MeetingListActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        mNotificationManager.notify(0, mBuilder.build());
+
+    }
+
+    //кроме Meetings есть еще один ключ Keys, в котором содержатся ключи существующих встреч.
+    //если встреча только что добавлена, то в списке ключей ее еще нет.
+    //сравниваем список ключей, со списком встреч, и если есть не совпадение, то отсылаем уведамление и добавляем ключ в список.
+    public void ifNewMeeting(DatabaseReference mRef) {
+
+        if (mapKeys.size() < mapMeetings.size())
         {
-            this.mRef = ref;
-        }
+            for (int i = 0; i < listMeetings.size(); i++)
+            {
+                boolean isNew = false;
+                MeetingRow meeting = listMeetings.get(i);
 
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot)
-        {
-            map = (Map<String, Map<String, String>>) dataSnapshot.getValue();
+                for (int j = 0; j < listKeys.size(); j++) {
 
-            for (int i = 0; i < map.keySet().toArray().length; i++) {
-                MeetingRow meeting = new MeetingRow();
-                String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
-                String title = map.get(map.keySet().toArray()[i].toString()).get("title");
-                String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-                String[] date = map.get(map.keySet().toArray()[i].toString()).get("begin").split(" ");
-                if (date[0].equals(mDate)) {
-                    meeting.setTitle(title);
-                    meeting.setDesc(desc);
-                    meeting.setKey(key);
-                    meeting.setDate(date[0]);
-                    listMeetings.add(meeting);
+                    if (listMeetings.get(i).getKey().equals(listKeys.get(j)))
+                    {
+                        isNew = true;
+                        break;
+                    }
+                }
+
+                if (!isNew) {
+                    Context context = getApplicationContext();
+                    try {
+                        GoogleCalendar.init(context, meeting.getDate(), meeting.getTimeBegin(), meeting.getDateEnd(),
+                                meeting.getTimeEnd(), meeting.getTitle(), meeting.getDesc());
+                        getNotification(meeting.getTitle());
+
+                        mapKeys.put("k_" + meeting.getKey(), meeting.getKey());
+                        mRef.child("Keys").setValue(mapKeys);
+                    }
+                    catch (ParseException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
-            mRef.child("Meetings").removeEventListener(this);
-
-            Intent responseIntent = new Intent();
-            responseIntent.setAction(ACTION_MYINTENTSERVICE);
-            responseIntent.addCategory(Intent.CATEGORY_DEFAULT);
-            responseIntent.putExtra(NETWORK, "1");
-            responseIntent.putExtra(MEETINGS, (Serializable) listMeetings);
-            sendBroadcast(responseIntent);
-            stopSelf();
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError)
-        {
-            Log.e("MLSError:", databaseError.getMessage());
 
         }
     }

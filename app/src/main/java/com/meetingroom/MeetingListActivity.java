@@ -73,14 +73,14 @@ public class MeetingListActivity extends AppCompatActivity
         intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(meetingBroadcast, intentFilter);
 
-      /*  MeetingListBroadcastReceiver meetingListBroadcast = new MeetingListBroadcastReceiver();
+        MeetingListBroadcastReceiver meetingListBroadcast = new MeetingListBroadcastReceiver();
         IntentFilter intentFilterTime = new IntentFilter(
                 MeetingListService.ACTION_MYINTENTSERVICE);
         intentFilterTime.addCategory(Intent.CATEGORY_DEFAULT);
-        registerReceiver(meetingListBroadcast, intentFilterTime);*/
+        registerReceiver(meetingListBroadcast, intentFilterTime);
 
 
-       // updateTimeMeetingList();
+        updateTimeMeetingList();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -114,7 +114,7 @@ public class MeetingListActivity extends AppCompatActivity
                 m = (ArrayList<MeetingRow>) intent.getSerializableExtra(MeetingListServiceTime.MEETINGS);
                 RVAdapter adapter = new RVAdapter(m, MeetingListActivity.this);
                 mMeetingList.setAdapter(adapter);
-                Toast.makeText(MeetingListActivity.this, "Meetings update", Toast.LENGTH_LONG).show();
+                Toast.makeText(MeetingListActivity.this, "Список обновлен", Toast.LENGTH_LONG).show();
             } else Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
 
         }
