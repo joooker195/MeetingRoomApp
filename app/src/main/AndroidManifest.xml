@@ -46,6 +46,10 @@
             android:name=".services.MeetingDelService"
             android:exported="false">
         </service>
+        <service
+            android:name=".services.MeetingSearchService"
+            android:exported="false">
+        </service>
 
     </application>
 

@@ -1,36 +1,36 @@
 package com.meetingroom;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 import com.meetingroom.adapter.RVAdapter;
+import com.meetingroom.services.MeetingSearchService;
 import com.meetingroom.variables.MeetingRow;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MeetingSearchActivity extends AppCompatActivity {
 
 
     private RecyclerView mMeetingList;
+    ArrayList<MeetingRow> m = new ArrayList<>();
 
     private EditText mEditText;
     private Button mButtonSearch;
+
+    private String desc = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,117 +43,43 @@ public class MeetingSearchActivity extends AppCompatActivity {
 
         mEditText = (EditText) findViewById(R.id.search_edit);
         mButtonSearch = (Button) findViewById(R.id.search);
-    }
 
+        searchMeeting();
 
-    protected void onStart() {
-
-        super.onStart();
-
-        viewCards();
+        MeetingSearchBroadcastReceiver meetingBroadcast = new MeetingSearchBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter(
+                MeetingSearchService.ACTION_MYINTENTSERVICE);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingBroadcast, intentFilter);
 
         mButtonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
-                mRef.addValueEventListener(new ValueEventListener() {
-
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        try {
-
-                            Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                            ArrayList<MeetingRow> listMeetings = new ArrayList<>();
-
-                            for(int i=0; i<map.keySet().toArray().length; i++)
-                            {
-                                MeetingRow meeting = new MeetingRow();
-                                String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
-                                String title = map.get(map.keySet().toArray()[i].toString()).get("title");
-                                String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-                                if(desc.equals(mEditText.getText().toString()) || mEditText.getText().equals(""))
-                                {
-                                    meeting.setTitle(title);
-                                    meeting.setDesc(desc);
-                                    meeting.setKey(key);
-                                    listMeetings.add(meeting);
-                                }
-                            }
-
-                            RVAdapter adapter = new RVAdapter(listMeetings, MeetingSearchActivity.this);
-                            mMeetingList.setAdapter(adapter);
-
-                        }
-                        catch (Exception e)
-                        {
-                            Log.e("E_VALUE", e.getMessage());
-                        }
-
-                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(mButtonSearch.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError firebaseError) {
-
-                    }
-
-                });
+                desc = mEditText.getText().toString();
+                searchMeeting();
+                desc = "";
             }
         });
-
-
     }
 
-    public void viewCards()
+    public class MeetingSearchBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("1")) {
+                m = (ArrayList<MeetingRow>) intent.getSerializableExtra(MeetingSearchService.MEETINGS);
+                RVAdapter adapter = new RVAdapter(m, MeetingSearchActivity.this);
+                mMeetingList.setAdapter(adapter);
+            } else Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
+
+        }
+    }
+
+    public void searchMeeting()
     {
-        Firebase mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
-        mRef.addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                try {
-
-                    Map<String, Map<String, String>> map = dataSnapshot.getValue(Map.class);
-                    ArrayList<MeetingRow> listMeetings = new ArrayList<>();
-
-                    for(int i=0; i<map.keySet().toArray().length; i++)
-                    {
-                        MeetingRow meeting = new MeetingRow();
-                        String desc = map.get(map.keySet().toArray()[i].toString()).get("desc");
-                        String title = map.get(map.keySet().toArray()[i].toString()).get("title");
-                        String key = map.get(map.keySet().toArray()[i].toString()).get("key");
-
-                        meeting.setTitle(title);
-                        meeting.setDesc(desc);
-                        meeting.setKey(key);
-                        listMeetings.add(meeting);
-                    }
-
-                    RVAdapter adapter = new RVAdapter(listMeetings, MeetingSearchActivity.this);
-                    mMeetingList.setAdapter(adapter);
-
-                }
-                catch (Exception e)
-                {
-                    Log.e("E_VALUE", e.getMessage());
-                }
-
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mButtonSearch.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-
-        });
+        Intent intent = new Intent(MeetingSearchActivity.this, MeetingSearchService.class);
+        intent.putExtra(MeetingSearchService.DESC, desc);
+        startService(intent);
     }
 
     @Override
