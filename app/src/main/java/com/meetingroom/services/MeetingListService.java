@@ -20,7 +20,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.meetingroom.MeetingListActivity;
 import com.meetingroom.R;
 import com.meetingroom.adapter.GoogleCalendar;
-import com.meetingroom.variables.MainVariables;
 import com.meetingroom.variables.MeetingRow;
 
 import java.io.Serializable;
@@ -117,23 +116,29 @@ public class MeetingListService extends IntentService
             mapMeetings = (Map<String, Map<String, String>>) dataSnapshot.child("Meetings").getValue();
             mapKeys = (Map<String, String>) dataSnapshot.child("Keys").getValue();
 
-            for (int i = 0; i < mapMeetings.keySet().toArray().length; i++) {
-                MeetingRow meeting = new MeetingRow();
-                String desc = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("desc");
-                String title = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("title");
-                String key = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("key");
-                String[] date = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("begin").split(" ");
-                String[] dateEnd = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("end").split(" ");
-                if (date[0].equals(mDate)) {
-                    meeting.setTitle(title);
-                    meeting.setDesc(desc);
-                    meeting.setKey(key);
-                    meeting.setDate(date[0]);
-                    meeting.setTimeBegin(date[1]);
-                    meeting.setDateEnd(dateEnd[0]);
-                    meeting.setTimeEnd(dateEnd[1]);
-                    listMeetings.add(meeting);
+            try {
+                for (int i = 0; i < mapMeetings.keySet().toArray().length; i++) {
+                    MeetingRow meeting = new MeetingRow();
+                    String desc = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("desc");
+                    String title = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("title");
+                    String key = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("key");
+                    String[] date = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("begin").split(" ");
+                    String[] dateEnd = mapMeetings.get(mapMeetings.keySet().toArray()[i].toString()).get("end").split(" ");
+                    if (date[0].equals(mDate)) {
+                        meeting.setTitle(title);
+                        meeting.setDesc(desc);
+                        meeting.setKey(key);
+                        meeting.setDate(date[0]);
+                        meeting.setTimeBegin(date[1]);
+                        meeting.setDateEnd(dateEnd[0]);
+                        meeting.setTimeEnd(dateEnd[1]);
+                        listMeetings.add(meeting);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Log.e("UpdateMeeting_E", e.getMessage());
             }
 
             for (int i = 0; i < mapKeys.keySet().toArray().length; i++)
@@ -217,7 +222,7 @@ public class MeetingListService extends IntentService
                                 meeting.getTimeEnd(), meeting.getTitle(), meeting.getDesc());
                         getNotification(meeting.getTitle());
 
-                        mapKeys.put("k_" + MainVariables.getKey(), meeting.getKey());
+                        mapKeys.put("k_" + meeting.getKey(), meeting.getKey());
                         mRef.child("Keys").setValue(mapKeys);
                     }
                     catch (ParseException e)

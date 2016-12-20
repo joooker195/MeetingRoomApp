@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +23,6 @@ import android.widget.Toast;
 
 import com.firebase.client.Firebase;
 import com.meetingroom.services.MeetingAddService;
-import com.meetingroom.variables.MainVariables;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,6 +72,11 @@ public class MeetingAddActivity extends AppCompatActivity {
         mEditTimeEnd = (EditText) findViewById(R.id.time_end);
         mEditPriority = (EditText) findViewById(R.id.add_priority);
 
+        mEditDateBegin.setInputType(InputType.TYPE_NULL);
+        mEditTimeBegin.setInputType(InputType.TYPE_NULL);
+        mEditDateEnd.setInputType(InputType.TYPE_NULL);
+        mEditTimeEnd.setInputType(InputType.TYPE_NULL);
+
 
         MeetingAddBroadcastReceiver meetingBroadcast = new MeetingAddBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter(
@@ -119,10 +124,6 @@ public class MeetingAddActivity extends AppCompatActivity {
             }
         });
 
-        //получаем уникальный key отдельной встречи (реалиовано рандомом)
-        key = MainVariables.getKey();
-        mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
-
         mAddMeetingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -136,6 +137,7 @@ public class MeetingAddActivity extends AppCompatActivity {
                     endDate = mEditDateEnd.getText().toString();
                     endTime = mEditTimeEnd.getText().toString();
                     priority = mEditPriority.getText().toString();
+
 
                     isEmpty = (title.equals("") || desc.equals("") || beginTime.equals("") || beginDate.equals("")
                         || endDate.equals("") || endTime.equals("") || priority.equals(""));
