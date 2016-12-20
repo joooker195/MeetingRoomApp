@@ -198,19 +198,19 @@ public class MeetingListService extends IntentService
         {
             for (int i = 0; i < listMeetings.size(); i++)
             {
-                boolean f = false;
+                boolean isNew = false;
                 MeetingRow meeting = listMeetings.get(i);
 
                 for (int j = 0; j < listKeys.size(); j++) {
 
                     if (listMeetings.get(i).getKey().equals(listKeys.get(j)))
                     {
-                        f = true;
+                        isNew = true;
                         break;
                     }
                 }
 
-                if (!f) {
+                if (!isNew) {
                     Context context = getApplicationContext();
                     try {
                         GoogleCalendar.init(context, meeting.getDate(), meeting.getTimeBegin(), meeting.getDateEnd(),

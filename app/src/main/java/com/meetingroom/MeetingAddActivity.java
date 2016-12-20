@@ -1,12 +1,10 @@
 package com.meetingroom;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -23,7 +21,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
-import com.meetingroom.adapter.GoogleCalendar;
+import com.meetingroom.services.MeetingAddService;
 import com.meetingroom.variables.MainVariables;
 
 import java.text.ParseException;
@@ -32,7 +30,7 @@ import java.util.Calendar;
 
 public class MeetingAddActivity extends AppCompatActivity {
 
-    private Button mAddMeeting;
+    private Button mAddMeetingButton;
     private Firebase mRef;
     private String key = "";
     private NotificationCompat.Builder mBuilder;
@@ -47,13 +45,25 @@ public class MeetingAddActivity extends AppCompatActivity {
     private DatePicker mDatePicker;
     private TimePicker mTimePicker;
 
+    private String title = "";
+    private String desc = "";
+    private String beginDate = "";
+    private String beginTime = "";
+    private String endDate = "";
+    private String endTime = "";
+    private String priority = "";
+
+    private boolean isEmpty = false;
+    private boolean parseDate = true;
+    private boolean parseTime = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meeting_add);
 
-        mAddMeeting = (Button) findViewById(R.id.add_button);
+        mAddMeetingButton = (Button) findViewById(R.id.add_button);
         mEditTitle = (EditText) findViewById(R.id.add_title);
         mEditDesc = (EditText) findViewById(R.id.add_desc);
         mEditDateBegin = (EditText) findViewById(R.id.date_begin);
@@ -61,6 +71,13 @@ public class MeetingAddActivity extends AppCompatActivity {
         mEditDateEnd = (EditText) findViewById(R.id.date_end);
         mEditTimeEnd = (EditText) findViewById(R.id.time_end);
         mEditPriority = (EditText) findViewById(R.id.add_priority);
+
+
+        MeetingAddBroadcastReceiver meetingBroadcast = new MeetingAddBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter(
+                MeetingAddService.ACTION_MYINTENTSERVICE);
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(meetingBroadcast, intentFilter);
 
 
          mEditDateBegin.setOnClickListener(new View.OnClickListener()
@@ -106,62 +123,33 @@ public class MeetingAddActivity extends AppCompatActivity {
         key = MainVariables.getKey();
         mRef = new Firebase("https://meeting-room-3a41e.firebaseio.com/Meetings/");
 
-        mAddMeeting.setOnClickListener(new View.OnClickListener() {
+        mAddMeetingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 try {
-                    //создаем ссылку на встречу
-                    Firebase mChildRef = mRef.child("n_" + key);
 
-                    //проверяем, чтобы все поля были не пустые
-                    boolean isEnptyFlag = (mEditTitle.getText().toString().equals("") || mEditDesc.getText().toString().equals("")
-                            || mEditDateBegin.getText().toString().equals("") || mEditTimeBegin.getText().toString().equals("")
-                            || mEditDateEnd.getText().toString().equals("")  || mEditTimeEnd.getText().toString().equals("")
-                            || mEditPriority.getText().toString().equals(""));
-                    //правильность ввода даты
-                    boolean parseDateFlag = (isValidDate(mEditDateBegin.getText().toString(), "dd.MM.yyyy") &&
-                                                isValidDate(mEditDateEnd.getText().toString(), "dd.MM.yyyy"));
-                    //правильность ввода времени
-                    boolean parseTimeFlag = (isValidTime(mEditTimeBegin.getText().toString(), "HH:mm") &&
-                            isValidTime(mEditTimeEnd.getText().toString(), "HH:mm"));
+                    title = mEditTitle.getText().toString();
+                    desc = mEditDesc.getText().toString();
+                    beginDate = mEditDateBegin.getText().toString();
+                    beginTime = mEditTimeBegin.getText().toString();
+                    endDate = mEditDateEnd.getText().toString();
+                    endTime = mEditTimeEnd.getText().toString();
+                    priority = mEditPriority.getText().toString();
 
-                    if (isEnptyFlag || !parseDateFlag || !parseTimeFlag)
+                    isEmpty = (title.equals("") || desc.equals("") || beginTime.equals("") || beginDate.equals("")
+                        || endDate.equals("") || endTime.equals("") || priority.equals(""));
+
+                    parseDate = (isValidDate(beginDate,"dd.MM.yyyy") && isValidDate(endDate, "dd.MM.yyyy"));
+
+                    parseTime = (isValidTime(beginTime, "HH:mm") && isValidTime(endTime, "HH:mm"));
+
+                    if(isEmpty || !parseDate || !parseTime)
                     {
-                        throw new Exception();
+                        throw  new Exception();
                     }
 
-                    //создаем новую встречу
-                    //создаем новый ключ для текущей ссылки и добавляем значение
-
-                    String beginDate = mEditDateBegin.getText().toString();
-                    String beginTime = mEditTimeBegin.getText().toString();
-                    String endDate = mEditDateEnd.getText().toString();
-                    String endTime = mEditTimeEnd.getText().toString();
-                    String title = mEditTitle.getText().toString();
-                    String desc = mEditDesc.getText().toString();
-
-                    Firebase mChildRefTitle = mChildRef.child("title");
-                    mChildRefTitle.setValue(title);
-
-                    Firebase mChildRefDesc = mChildRef.child("desc");
-                    mChildRefDesc.setValue(desc);
-
-                    Firebase mChildRefBegin = mChildRef.child("begin");
-                    mChildRefBegin.setValue(beginDate+" "+beginTime);
-
-                    Firebase mChildRefEnd = mChildRef.child("end");
-                    mChildRefEnd.setValue(endDate + " "+ endTime);
-
-                    Firebase mChildRefPrior = mChildRef.child("priority");
-                    mChildRefPrior.setValue(mEditPriority.getText().toString());
-
-                    Firebase mChildRefKey = mChildRef.child("key");
-                    mChildRefKey.setValue(key);
-
-                    getNotification("Добавлена новая встреча!", mEditTitle.getText().toString());
-
-                    GoogleCalendar.init(MeetingAddActivity.this, beginDate, beginTime, endDate, endTime, title, desc);
+                    addMeeting();
 
                     Intent intent= new Intent(MeetingAddActivity.this, MeetingListActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -176,6 +164,16 @@ public class MeetingAddActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+
+    public class MeetingAddBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getStringExtra("NETWORK").equals("0"))
+                Toast.makeText(context, "Network not found!", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -233,31 +231,6 @@ public class MeetingAddActivity extends AppCompatActivity {
         return true;
     }
 
-    public  void getNotification(String title, String message)
-    {
-        mBuilder =
-                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_notification)
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setTicker(title)
-                        .setAutoCancel(true)
-                        .setDefaults(Notification.DEFAULT_ALL);
-
-        Intent resultIntent = new Intent(this, MeetingListActivity.class);
-
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-
-        stackBuilder.addParentStack(MeetingListActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        mNotificationManager.notify(0, mBuilder.build());
-
-    }
 
     private void onClickDatePicker(final EditText editDate)
     {
@@ -311,4 +284,17 @@ public class MeetingAddActivity extends AppCompatActivity {
         AlertDialog alert = alertDialogBuilder.create();
         alert.show();
     }
+
+    private  void addMeeting()
+    {
+        Intent intent = new Intent(MeetingAddActivity.this, MeetingAddService.class);
+        intent.putExtra(MeetingAddService.TITLE, title);
+        intent.putExtra(MeetingAddService.DESC, desc);
+        intent.putExtra(MeetingAddService.BEGIN, beginDate + " " + beginTime);
+        intent.putExtra(MeetingAddService.END, endDate + " " + endTime);
+        intent.putExtra(MeetingAddService.PRIORITY, priority);
+        startService(intent);
+
+    }
+
 }
